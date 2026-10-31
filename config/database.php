@@ -66,6 +66,9 @@ return [
             'prefix' => '',
             'schema' => 'public',
             'sslmode' => env('DB_SSLMODE', 'require'),
+            'options' => [
+                PDO::ATTR_EMULATE_PREPARES => true,
+            ],
         ],
 
         'sqlsrv' => [
