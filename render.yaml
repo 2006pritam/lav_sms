@@ -1,0 +1,32 @@
+services:
+  - type: web
+    name: lav-sms
+    runtime: docker
+    plan: free
+    branch: master
+    healthCheckPath: /login
+    envVars:
+      - key: APP_ENV
+        value: production
+      - key: APP_DEBUG
+        value: "false"
+      - key: APP_KEY
+        sync: false
+      - key: APP_URL
+        sync: false
+      - key: DB_CONNECTION
+        value: pgsql
+      - key: DB_SSLMODE
+        value: require
+      - key: DATABASE_URL
+        sync: false
+      - key: LOG_CHANNEL
+        value: stderr
+      - key: CACHE_DRIVER
+        value: file
+      - key: SESSION_DRIVER
+        value: file
+      - key: QUEUE_CONNECTION
+        value: sync
+      - key: BROADCAST_DRIVER
+        value: log

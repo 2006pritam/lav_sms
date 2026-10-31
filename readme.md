@@ -44,6 +44,12 @@ Check Laravel 8 Requirements https://laravel.com/docs/8.x
 - Migrate Database (php artisan migrate)
 - Database seed (php artisan db:seed)
 
+### Render deployment (Docker + Neon PostgreSQL)
+
+This repository includes a Render Blueprint (`render.yaml`) and Docker configuration. In Render, create a Blueprint from this repository and set `DATABASE_URL` to the Neon connection string, `APP_KEY` to a Laravel application key (`php artisan key:generate --show`), and `APP_URL` to the public HTTPS URL Render assigns to the service. Keep credentials in Render's environment settings; do not commit them to this repository.
+
+The container runs `php artisan migrate --force` at startup and serves the application from Laravel's `public` directory. It does not run the bundled demo seeders because they create accounts with publicly documented default passwords. Populate required reference data and create an administrator with a unique password using a secure, project-specific process before opening the application to users.
+
 **Login Credentials**
 After seeding. Login details as follows:
 
