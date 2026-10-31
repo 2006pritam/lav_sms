@@ -1,5 +1,8 @@
 FROM php:8.2-apache-bookworm
 
+RUN printf '%s\n' 'error_reporting = E_ALL & ~E_DEPRECATED & ~E_USER_DEPRECATED' \
+    > /usr/local/etc/php/conf.d/zz-render-compat.ini
+
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         libfreetype6-dev \
