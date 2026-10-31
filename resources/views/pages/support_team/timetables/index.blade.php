@@ -103,7 +103,7 @@
                                                     {{--View--}}
                                                     <a href="{{ route('ttr.show', $ttr->id) }}" class="dropdown-item"><i class="icon-eye"></i> View Timetable</a>
 
-                                                    @if(Qs::userIsTeamSAT() && !$ttr->exam_id)
+                                                    @if(Qs::userIsTeacher() && !$ttr->exam_id)
                                                         <a href="{{ route('attendance.manage', ['class_id' => $ttr->my_class_id, 'ttr_id' => $ttr->id]) }}" class="dropdown-item"><i class="icon-calendar52"></i> Manage Attendance</a>
                                                     @endif
 

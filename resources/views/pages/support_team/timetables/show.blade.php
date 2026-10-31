@@ -9,7 +9,7 @@
                 <div class="col-md-3"><h6 class="card-title mb-0"><strong>Class: </strong> {{ $my_class->name }}</h6></div>
                 <div class="col-md-3"><h6 class="card-title mb-0"><strong>Year: </strong> {{ ($ttr->exam_id) ? 'Exam TimeTable' : 'Class TimeTable' }} {{ '('.$ttr->year.')' }}</h6></div>
                 <div class="col-md-3 text-right">
-                    @if(Qs::userIsTeamSAT() && !$ttr->exam_id)
+                    @if(Qs::userIsTeacher() && !$ttr->exam_id)
                         <a href="{{ route('attendance.manage', ['class_id' => $my_class->id, 'ttr_id' => $ttr->id]) }}" class="btn btn-sm btn-primary font-weight-semibold">
                             <i class="icon-calendar52 mr-1"></i> Manage Class Attendance
                         </a>
@@ -45,7 +45,7 @@
                             @foreach($d_time->where('day', $day) as $dt)
                             <td class="text-center">
                                 <div class="font-weight-semibold">{{ $dt['subject'] ?? '-' }}</div>
-                                @if(Qs::userIsTeamSAT() && !$ttr->exam_id && !empty($dt['subject']))
+                                @if(Qs::userIsTeacher() && !$ttr->exam_id && !empty($dt['subject']))
                                     <a href="{{ route('attendance.manage', ['class_id' => $my_class->id, 'ttr_id' => $ttr->id, 'tt_id' => $dt['tt_id'] ?? null, 'subject_id' => $dt['subject_id'] ?? null, 'ts_id' => $dt['ts_id'] ?? null]) }}"
                                        class="badge badge-primary mt-1 d-inline-block" title="Take Attendance for {{ $dt['subject'] }}">
                                         <i class="icon-checkmark3 mr-1"></i> Attendance
@@ -60,7 +60,7 @@
             {{--Print Button--}}
             <div class="text-center mt-4">
                 <a target="_blank" href="{{ route('ttr.print', $ttr->id) }}" class="btn btn-danger btn-lg"><i class="icon-printer mr-2"></i> Print Timetable</a>
-                @if(Qs::userIsTeamSAT() && !$ttr->exam_id)
+                @if(Qs::userIsTeacher() && !$ttr->exam_id)
                     <a href="{{ route('attendance.manage', ['class_id' => $my_class->id, 'ttr_id' => $ttr->id]) }}" class="btn btn-primary btn-lg ml-2">
                         <i class="icon-calendar52 mr-2"></i> Open Class Attendance
                     </a>

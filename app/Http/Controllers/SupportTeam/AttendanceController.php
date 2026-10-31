@@ -22,11 +22,15 @@ class AttendanceController extends Controller
     public function __construct()
     {
         $this->year = Qs::getCurrentSession();
-        $this->middleware('teamSAT', ['except' => ['student']]);
+        $this->middleware('teacher', ['except' => ['student']]);
     }
 
     public function index(Request $req)
     {
+        if (!Qs::userIsTeacher()) {
+            return redirect()->route('dashboard')->with('pop_error', __('msg.denied'));
+        }
+
         $my_class_id = $req->query('class_id') ?: $req->query('my_class_id');
         $section_id = $req->query('section_id');
 
@@ -37,9 +41,10 @@ class AttendanceController extends Controller
         $d['selected'] = false;
         $d['my_classes'] = MyClass::orderBy('name')->get();
         $d['sections'] = Section::orderBy('name')->get();
-        $d['subjects'] = Qs::userIsTeacher()
-            ? Subject::where('teacher_id', Auth::id())->orderBy('name')->get()
-            : Subject::orderBy('name')->get();
+        $d['subjects'] = Subject::where('teacher_id', Auth::id())->orderBy('name')->get();
+        if ($d['subjects']->isEmpty()) {
+            $d['subjects'] = Subject::orderBy('name')->get();
+        }
         $d['tt_records'] = TimeTableRecord::whereNull('exam_id')
             ->with('my_class')
             ->orderBy('name')
@@ -51,6 +56,10 @@ class AttendanceController extends Controller
 
     public function selector(Request $req)
     {
+        if (!Qs::userIsTeacher()) {
+            return redirect()->route('dashboard')->with('pop_error', __('msg.denied'));
+        }
+
         $req->validate([
             'my_class_id' => 'required|exists:my_classes,id',
             'attendance_date' => 'required|date',
@@ -69,6 +78,10 @@ class AttendanceController extends Controller
 
     public function manage(Request $req, $my_class_id, $section_id = null)
     {
+        if (!Qs::userIsTeacher()) {
+            return redirect()->route('dashboard')->with('pop_error', __('msg.denied'));
+        }
+
         return $this->renderAttendancePage($req, (int) $my_class_id, $section_id ? (int) $section_id : null);
     }
 
@@ -108,9 +121,10 @@ class AttendanceController extends Controller
             $section_id = (int) $req->query('section_id');
         }
 
-        $class_subjects = Qs::userIsTeacher()
-            ? Subject::where('my_class_id', $my_class_id)->where('teacher_id', Auth::id())->orderBy('name')->get()
-            : Subject::where('my_class_id', $my_class_id)->orderBy('name')->get();
+        $class_subjects = Subject::where('my_class_id', $my_class_id)
+            ->where('teacher_id', Auth::id())
+            ->orderBy('name')
+            ->get();
 
         if ($class_subjects->isEmpty()) {
             $class_subjects = Subject::where('my_class_id', $my_class_id)->orderBy('name')->get();
@@ -213,6 +227,10 @@ class AttendanceController extends Controller
 
     public function store(Request $req)
     {
+        if (!Qs::userIsTeacher()) {
+            return redirect()->route('dashboard')->with('pop_error', __('msg.denied'));
+        }
+
         $req->validate([
             'my_class_id' => 'required|exists:my_classes,id',
             'attendance_date' => 'required|date',

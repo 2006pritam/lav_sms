@@ -6,7 +6,7 @@
         @include('pages.support_team.attendance.student_dashboard_widget')
     @endif
 
-    @if(Qs::userIsTeamSAT())
+    @if(Qs::userIsTeacher())
         <div class="card border-left-primary border-left-3 mb-3">
             <div class="card-body d-flex justify-content-between align-items-center py-2">
                 <div>

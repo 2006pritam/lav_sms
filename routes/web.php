@@ -22,10 +22,10 @@ Route::group(['middleware' => 'auth'], function () {
     /*************** Support Team *****************/
     Route::group(['namespace' => 'SupportTeam',], function(){
 
-        /*************** Attendance *****************/
+        /*************** Attendance (Only Teacher Marks Attendance) *****************/
         Route::group(['prefix' => 'attendance'], function(){
             Route::get('/my/{student_id?}', 'AttendanceController@student')->name('attendance.student');
-            Route::group(['middleware' => 'teamSAT'], function(){
+            Route::group(['middleware' => 'teacher'], function(){
                 Route::get('/', 'AttendanceController@index')->name('attendance.index');
                 Route::post('/selector', 'AttendanceController@selector')->name('attendance.selector');
                 Route::get('/manage/{class_id}/{section_id?}', 'AttendanceController@manage')->name('attendance.manage');
