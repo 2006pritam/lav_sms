@@ -22,6 +22,17 @@ Route::group(['middleware' => 'auth'], function () {
     /*************** Support Team *****************/
     Route::group(['namespace' => 'SupportTeam',], function(){
 
+        /*************** Attendance *****************/
+        Route::group(['prefix' => 'attendance'], function(){
+            Route::get('/my/{student_id?}', 'AttendanceController@student')->name('attendance.student');
+            Route::group(['middleware' => 'teamSAT'], function(){
+                Route::get('/', 'AttendanceController@index')->name('attendance.index');
+                Route::post('/selector', 'AttendanceController@selector')->name('attendance.selector');
+                Route::get('/manage/{class_id}/{section_id?}', 'AttendanceController@manage')->name('attendance.manage');
+                Route::post('/store', 'AttendanceController@store')->name('attendance.store');
+            });
+        });
+
         /*************** Students *****************/
         Route::group(['prefix' => 'students'], function(){
             Route::get('reset_pass/{st_id}', 'StudentRecordController@reset_pass')->name('st.reset_pass');

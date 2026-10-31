@@ -3,16 +3,20 @@
 namespace App\Http\Controllers;
 
 use App\Helpers\Qs;
+use App\Http\Controllers\SupportTeam\AttendanceController;
+use App\Models\MyClass;
 use App\Repositories\UserRepo;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Schema;
 
 class HomeController extends Controller
 {
     protected $user;
+
     public function __construct(UserRepo $user)
     {
         $this->user = $user;
     }
-
 
     public function index()
     {
@@ -37,9 +41,18 @@ class HomeController extends Controller
 
     public function dashboard()
     {
-        $d=[];
-        if(Qs::userIsTeamSAT()){
+        $d = [];
+        if (Qs::userIsTeamSAT()) {
             $d['users'] = $this->user->getAll();
+            $d['my_classes'] = MyClass::orderBy('name')->get();
+        }
+
+        if (Qs::userIsStudent() && Schema::hasTable('attendances')) {
+            $attData = AttendanceController::buildStudentAttendanceData(
+                Auth::id(),
+                Qs::getCurrentSession()
+            );
+            $d = array_merge($d, $attData);
         }
 
         return view('pages.support_team.dashboard', $d);

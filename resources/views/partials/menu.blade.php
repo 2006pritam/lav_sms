@@ -212,6 +212,11 @@
 
                 {{--End Exam--}}
 
+                @if(Qs::userIsTeamSAT())
+                    <li class="nav-item">
+                        <a href="{{ route('attendance.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['attendance.index', 'attendance.manage']) ? 'active' : '' }}"><i class="icon-calendar52"></i> <span>Attendance</span></a>
+                    </li>
+                @endif
                 @include('pages.'.Qs::getUserType().'.menu')
 
                 {{--Manage Account--}}

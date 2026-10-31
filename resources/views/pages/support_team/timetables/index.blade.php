@@ -72,7 +72,8 @@
                 @endif
 
                 @foreach($my_classes as $mc)
-                    <div class="tab-pane fade" id="ttr{{ $mc->id }}">                         <table class="table datatable-button-html5-columns">
+                    <div class="tab-pane fade" id="ttr{{ $mc->id }}">
+                        <table class="table datatable-button-html5-columns">
                             <thead>
                             <tr>
                                 <th>S/N</th>
@@ -89,7 +90,7 @@
                                     <td>{{ $loop->iteration }}</td>
                                     <td>{{ $ttr->name }}</td>
                                     <td>{{ $ttr->my_class->name }}</td>
-                                    <td>{{ ($ttr->exam_id) ? $ttr->exam->name : 'Class TimeTable' }}
+                                    <td>{{ ($ttr->exam_id) ? $ttr->exam->name : 'Class TimeTable' }}</td>
                                     <td>{{ $ttr->year }}</td>
                                     <td class="text-center">
                                         <div class="list-icons">
@@ -100,7 +101,11 @@
 
                                                 <div class="dropdown-menu dropdown-menu-right">
                                                     {{--View--}}
-                                                    <a href="{{ route('ttr.show', $ttr->id) }}" class="dropdown-item"><i class="icon-eye"></i> View</a>
+                                                    <a href="{{ route('ttr.show', $ttr->id) }}" class="dropdown-item"><i class="icon-eye"></i> View Timetable</a>
+
+                                                    @if(Qs::userIsTeamSAT() && !$ttr->exam_id)
+                                                        <a href="{{ route('attendance.manage', ['class_id' => $ttr->my_class_id, 'ttr_id' => $ttr->id]) }}" class="dropdown-item"><i class="icon-calendar52"></i> Manage Attendance</a>
+                                                    @endif
 
                                                     @if(Qs::userIsTeamSA())
                                                     {{--Manage--}}

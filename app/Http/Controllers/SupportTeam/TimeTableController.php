@@ -187,7 +187,15 @@ class TimeTableController extends Controller
 
         foreach ($days as $day) {
             foreach ($tms as $tm) {
-                $d_time[] = ['day' => $day, 'time' => $tm->full, 'subject' => $tts->where('ts_id', $tm->id)->where($d_date, $day)->first()->subject->name ?? NULL ];
+                $entry = $tts->where('ts_id', $tm->id)->where($d_date, $day)->first();
+                $d_time[] = [
+                    'day' => $day,
+                    'time' => $tm->full,
+                    'subject' => $entry->subject->name ?? NULL,
+                    'tt_id' => $entry->id ?? NULL,
+                    'subject_id' => $entry->subject_id ?? NULL,
+                    'ts_id' => $tm->id,
+                ];
             }
         }
 
@@ -195,6 +203,7 @@ class TimeTableController extends Controller
 
         return view('pages.support_team.timetables.show', $d);
     }
+
     public function print_record($ttr_id)
     {
         $d_time = [];
