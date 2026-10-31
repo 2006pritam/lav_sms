@@ -29,6 +29,9 @@ RUN composer install \
         --no-interaction \
         --prefer-source \
         --optimize-autoloader \
+        --no-scripts \
+    && sh docker/patch-laravel-deprecations.sh \
+    && php artisan package:discover --ansi \
     && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
     && chown -R www-data:www-data storage bootstrap/cache \
     && chmod -R ug+rwX storage bootstrap/cache
