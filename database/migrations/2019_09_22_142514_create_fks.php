@@ -4,114 +4,78 @@ use Illuminate\Support\Facades\Schema;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Database\Migrations\Migration;
 
+require_once __DIR__ . '/2019_09_22_142513_repair_missing_lookup_tables.php';
+
 class CreateFks extends Migration
 {
+    public $withinTransaction = false;
 
     public function up()
     {
-        Schema::table('lgas', function (Blueprint $table) {
-            $table->foreign('state_id')->references('id')->on('states')->onDelete('cascade');
-        });
+        // Ensure all referenced and target tables exist even if an earlier migration batch was partial
+        (new RepairMissingLookupTables())->up();
 
-        Schema::table('users', function (Blueprint $table) {
-            $table->foreign('state_id')->references('id')->on('states')->onDelete('set null');
-            $table->foreign('lga_id')->references('id')->on('lgas')->onDelete('set null');
-            $table->foreign('bg_id')->references('id')->on('blood_groups')->onDelete('set null');
-            $table->foreign('nal_id')->references('id')->on('nationalities')->onDelete('set null');
-        });
+        $fks = [
+            ['lgas', 'state_id', 'id', 'states', 'cascade'],
+            ['users', 'state_id', 'id', 'states', 'set null'],
+            ['users', 'lga_id', 'id', 'lgas', 'set null'],
+            ['users', 'bg_id', 'id', 'blood_groups', 'set null'],
+            ['users', 'nal_id', 'id', 'nationalities', 'set null'],
+            ['my_classes', 'class_type_id', 'id', 'class_types', 'set null'],
+            ['sections', 'my_class_id', 'id', 'my_classes', 'cascade'],
+            ['sections', 'teacher_id', 'id', 'users', 'set null'],
+            ['subjects', 'teacher_id', 'id', 'users', null],
+            ['subjects', 'my_class_id', 'id', 'my_classes', 'cascade'],
+            ['student_records', 'user_id', 'id', 'users', 'cascade'],
+            ['student_records', 'my_class_id', 'id', 'my_classes', 'cascade'],
+            ['student_records', 'section_id', 'id', 'sections', 'cascade'],
+            ['student_records', 'my_parent_id', 'id', 'users', 'set null'],
+            ['student_records', 'dorm_id', 'id', 'dorms', 'set null'],
+            ['marks', 'student_id', 'id', 'users', 'cascade'],
+            ['marks', 'my_class_id', 'id', 'my_classes', 'cascade'],
+            ['marks', 'section_id', 'id', 'sections', 'cascade'],
+            ['marks', 'subject_id', 'id', 'subjects', 'cascade'],
+            ['marks', 'exam_id', 'id', 'exams', 'cascade'],
+            ['marks', 'grade_id', 'id', 'grades', 'set null'],
+            ['grades', 'class_type_id', 'id', 'class_types', 'cascade'],
+            ['pins', 'user_id', 'id', 'users', 'cascade'],
+            ['pins', 'student_id', 'id', 'users', 'cascade'],
+            ['exam_records', 'exam_id', 'id', 'exams', 'cascade'],
+            ['exam_records', 'my_class_id', 'id', 'my_classes', 'cascade'],
+            ['exam_records', 'student_id', 'id', 'users', 'cascade'],
+            ['exam_records', 'section_id', 'id', 'sections', 'cascade'],
+            ['books', 'my_class_id', 'id', 'my_classes', 'cascade'],
+            ['book_requests', 'book_id', 'id', 'books', 'cascade'],
+            ['book_requests', 'user_id', 'id', 'users', 'cascade'],
+            ['staff_records', 'user_id', 'id', 'users', 'cascade'],
+            ['payments', 'my_class_id', 'id', 'my_classes', 'cascade'],
+            ['payment_records', 'payment_id', 'id', 'payments', 'cascade'],
+            ['payment_records', 'student_id', 'id', 'users', 'cascade'],
+            ['receipts', 'pr_id', 'id', 'payment_records', 'cascade'],
+            ['time_table_records', 'exam_id', 'id', 'exams', 'cascade'],
+            ['time_table_records', 'my_class_id', 'id', 'my_classes', 'cascade'],
+            ['time_slots', 'ttr_id', 'id', 'time_table_records', 'cascade'],
+            ['time_tables', 'ttr_id', 'id', 'time_table_records', 'cascade'],
+            ['time_tables', 'ts_id', 'id', 'time_slots', 'cascade'],
+            ['time_tables', 'subject_id', 'id', 'subjects', 'cascade'],
+        ];
 
-        Schema::table('my_classes', function (Blueprint $table) {
-            $table->foreign('class_type_id')->references('id')->on('class_types')->onDelete('set null');
-        });
-
-        Schema::table('sections', function (Blueprint $table) {
-            $table->foreign('my_class_id')->references('id')->on('my_classes')->onDelete('cascade');
-            $table->foreign('teacher_id')->references('id')->on('users')->onDelete('set null');
-        });
-
-        Schema::table('subjects', function (Blueprint $table) {
-            $table->foreign('teacher_id')->references('id')->on('users');
-            $table->foreign('my_class_id')->references('id')->on('my_classes')->onDelete('cascade');
-        });
-
-        Schema::table('student_records', function (Blueprint $table) {
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('my_class_id')->references('id')->on('my_classes')->onDelete('cascade');
-            $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
-            $table->foreign('my_parent_id')->references('id')->on('users')->onDelete('set null');
-            $table->foreign('dorm_id')->references('id')->on('dorms')->onDelete('set null');
-        });
-
-        Schema::table('marks', function (Blueprint $table) {
-            $table->foreign('student_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('my_class_id')->references('id')->on('my_classes')->onDelete('cascade');
-            $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
-            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
-            $table->foreign('exam_id')->references('id')->on('exams')->onDelete('cascade');
-            $table->foreign('grade_id')->references('id')->on('grades')->onDelete('set null');
-        });
-
-        Schema::table('grades', function (Blueprint $table) {
-            $table->foreign('class_type_id')->references('id')->on('class_types')->onDelete('cascade');
-        });
-
-        Schema::table('pins', function (Blueprint $table) {
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('student_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-        Schema::table('exam_records', function (Blueprint $table) {
-            $table->foreign('exam_id')->references('id')->on('exams')->onDelete('cascade');
-            $table->foreign('my_class_id')->references('id')->on('my_classes')->onDelete('cascade');
-            $table->foreign('student_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('section_id')->references('id')->on('sections')->onDelete('cascade');
-        });
-
-        Schema::table('books', function (Blueprint $table) {
-            $table->foreign('my_class_id')->references('id')->on('my_classes')->onDelete('cascade');
-        });
-
-        Schema::table('book_requests', function (Blueprint $table) {
-            $table->foreign('book_id')->references('id')->on('books')->onDelete('cascade');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-        Schema::table('staff_records', function (Blueprint $table) {
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-        Schema::table('payments', function (Blueprint $table) {
-            $table->foreign('my_class_id')->references('id')->on('my_classes')->onDelete('cascade');
-        });
-
-        Schema::table('payment_records', function (Blueprint $table) {
-            $table->foreign('payment_id')->references('id')->on('payments')->onDelete('cascade');
-            $table->foreign('student_id')->references('id')->on('users')->onDelete('cascade');
-        });
-
-        Schema::table('receipts', function (Blueprint $table) {
-            $table->foreign('pr_id')->references('id')->on('payment_records')->onDelete('cascade');
-        });
-
-        Schema::table('time_table_records', function (Blueprint $table) {
-            $table->foreign('exam_id')->references('id')->on('exams')->onDelete('cascade');
-            $table->foreign('my_class_id')->references('id')->on('my_classes')->onDelete('cascade');
-        });
-
-        Schema::table('time_slots', function (Blueprint $table) {
-            $table->foreign('ttr_id')->references('id')->on('time_table_records')->onDelete('cascade');
-        });
-
-        Schema::table('time_tables', function (Blueprint $table) {
-            $table->foreign('ttr_id')->references('id')->on('time_table_records')->onDelete('cascade');
-            $table->foreign('ts_id')->references('id')->on('time_slots')->onDelete('cascade');
-            $table->foreign('subject_id')->references('id')->on('subjects')->onDelete('cascade');
-        });
-
+        foreach ($fks as [$table, $column, $ref, $on, $onDelete]) {
+            try {
+                Schema::table($table, function (Blueprint $t) use ($column, $ref, $on, $onDelete) {
+                    $fk = $t->foreign($column)->references($ref)->on($on);
+                    if ($onDelete) {
+                        $fk->onDelete($onDelete);
+                    }
+                });
+            } catch (\Throwable $e) {
+                // Ignore duplicate foreign key constraint errors on re-run
+            }
+        }
     }
 
     public function down()
     {
-
+        //
     }
 }

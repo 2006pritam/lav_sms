@@ -13,13 +13,13 @@ RUN apt-get update \
         git \
         unzip \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
-    && docker-php-ext-install -j"$(nproc)" bcmath gd opcache pdo_pgsql zip \
+    && docker-php-ext-install -j"$(nproc)" bcmath gd opcache pdo_mysql pdo_pgsql zip \
     && a2enmod rewrite headers \
     && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-ENV COMPOSER_MAX_PARALLEL_HTTP=2 COMPOSER_PROCESS_TIMEOUT=600
+ENV COMPOSER_ALLOW_SUPERUSER=1 COMPOSER_PROCESS_TIMEOUT=600
 
 WORKDIR /var/www/html
 COPY . .
@@ -27,7 +27,7 @@ COPY . .
 RUN composer install \
         --no-dev \
         --no-interaction \
-        --prefer-source \
+        --prefer-dist \
         --optimize-autoloader \
         --no-scripts \
     && sh docker/patch-laravel-deprecations.sh \

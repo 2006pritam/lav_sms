@@ -258,24 +258,58 @@ class Qs
 
     public static function getSetting($type)
     {
-        return Setting::where('type', $type)->first()->description;
+        $defaults = [
+            'current_session' => '2018-2019',
+            'system_title' => 'CJIA',
+            'system_name' => 'CJ INSPIRED ACADEMY',
+            'term_ends' => '7/10/2018',
+            'term_begins' => '7/10/2018',
+            'phone' => '0123456789',
+            'address' => '18B North Central Park, Behind Central Square Tourist Center',
+            'system_email' => 'cjacademy@cj.com',
+            'alt_email' => '',
+            'email_host' => '',
+            'email_pass' => '',
+            'lock_exam' => 0,
+            'logo' => '',
+            'next_term_fees_j' => '20000',
+            'next_term_fees_pn' => '25000',
+            'next_term_fees_p' => '25000',
+            'next_term_fees_n' => '25600',
+            'next_term_fees_s' => '15600',
+            'next_term_fees_c' => '1600',
+        ];
+
+        try {
+            $setting = Setting::where('type', $type)->first();
+            if ($setting && $setting->description !== null) {
+                return $setting->description;
+            }
+        } catch (\Throwable $e) {
+            // Fallback to default setting when database is unseeded or unavailable
+        }
+
+        return $defaults[$type] ?? '';
     }
 
     public static function getCurrentSession()
     {
-        return self::getSetting('current_session');
+        return self::getSetting('current_session') ?: '2018-2019';
     }
 
     public static function getNextSession()
     {
         $oy = self::getCurrentSession();
         $old_yr = explode('-', $oy);
+        if (count($old_yr) < 2) {
+            return '2019-2020';
+        }
         return ++$old_yr[0].'-'.++$old_yr[1];
     }
 
     public static function getSystemName()
     {
-        return self::getSetting('system_name');
+        return self::getSetting('system_name') ?: config('app.name', 'CJ INSPIRED ACADEMY');
     }
 
     public static function findMyChildren($parent_id)

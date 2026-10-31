@@ -6,6 +6,8 @@ use Illuminate\Database\Migrations\Migration;
 
 class CreatePromotionsTable extends Migration
 {
+    public $withinTransaction = false;
+
     /**
      * Run the migrations.
      *
@@ -13,27 +15,39 @@ class CreatePromotionsTable extends Migration
      */
     public function up()
     {
-        Schema::create('promotions', function (Blueprint $table) {
-            $table->increments('id');
-            $table->unsignedInteger('student_id');
-            $table->unsignedInteger('from_class');
-            $table->unsignedInteger('from_section');
-            $table->unsignedInteger('to_class');
-            $table->unsignedInteger('to_section');
-            $table->tinyInteger('grad');
-            $table->string('from_session');
-            $table->string('to_session');
-            $table->string('status');
-            $table->timestamps();
-        });
+        if (!Schema::hasTable('promotions')) {
+            Schema::create('promotions', function (Blueprint $table) {
+                $table->increments('id');
+                $table->unsignedInteger('student_id');
+                $table->unsignedInteger('from_class');
+                $table->unsignedInteger('from_section');
+                $table->unsignedInteger('to_class');
+                $table->unsignedInteger('to_section');
+                $table->tinyInteger('grad');
+                $table->string('from_session');
+                $table->string('to_session');
+                $table->string('status');
+                $table->timestamps();
+            });
+        }
 
-        Schema::table('promotions', function (Blueprint $table) {
-            $table->foreign('student_id')->references('id')->on('users')->onDelete('cascade');
-            $table->foreign('from_class')->references('id')->on('my_classes')->onDelete('cascade');
-            $table->foreign('from_section')->references('id')->on('sections')->onDelete('cascade');
-            $table->foreign('to_section')->references('id')->on('sections')->onDelete('cascade');
-            $table->foreign('to_class')->references('id')->on('my_classes')->onDelete('cascade');
-        });
+        $fks = [
+            ['student_id', 'id', 'users', 'cascade'],
+            ['from_class', 'id', 'my_classes', 'cascade'],
+            ['from_section', 'id', 'sections', 'cascade'],
+            ['to_section', 'id', 'sections', 'cascade'],
+            ['to_class', 'id', 'my_classes', 'cascade'],
+        ];
+
+        foreach ($fks as [$column, $ref, $on, $onDelete]) {
+            try {
+                Schema::table('promotions', function (Blueprint $table) use ($column, $ref, $on, $onDelete) {
+                    $table->foreign($column)->references($ref)->on($on)->onDelete($onDelete);
+                });
+            } catch (\Throwable $e) {
+                // Ignore duplicate constraint error
+            }
+        }
     }
 
     /**

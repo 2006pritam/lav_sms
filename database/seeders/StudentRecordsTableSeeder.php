@@ -6,6 +6,7 @@ use App\Models\Section;
 use App\Models\StudentRecord;
 use App\User;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class StudentRecordsTableSeeder extends Seeder
@@ -17,6 +18,8 @@ class StudentRecordsTableSeeder extends Seeder
      */
     public function run()
     {
+        DB::table('student_records')->delete();
+
         $this->createStudentRecord();
         $this->createManyStudentRecords(3);
     }
@@ -25,29 +28,30 @@ class StudentRecordsTableSeeder extends Seeder
     {
         $sections = Section::all();
 
-        foreach ($sections as $section){
-          User::factory()
+        foreach ($sections as $section) {
+            User::factory()
                 ->has(
                     StudentRecord::factory()
-                    ->state([
-                    'section_id' => $section->id,
-                    'my_class_id' => $section->my_class_id,
-                    'user_id' => function(User $user){
-                        return ['user_id' => $user->id];
-                    },
-                ]), 'student_record')
+                        ->state([
+                            'section_id' => $section->id,
+                            'my_class_id' => $section->my_class_id,
+                        ]),
+                    'student_record'
+                )
                 ->count($count)
                 ->create([
                     'user_type' => 'student',
                     'password' => Hash::make('student'),
                 ]);
         }
-
     }
 
     protected function createStudentRecord()
     {
         $section = Section::first();
+        if (!$section) {
+            return;
+        }
 
         $user = User::factory()->create([
             'name' => 'Student CJ',
@@ -55,13 +59,12 @@ class StudentRecordsTableSeeder extends Seeder
             'username' => 'student',
             'password' => Hash::make('cj'),
             'email' => 'student@student.com',
-
         ]);
 
         StudentRecord::factory()->create([
             'my_class_id' => $section->my_class_id,
             'user_id' => $user->id,
-            'section_id' => $section->id
+            'section_id' => $section->id,
         ]);
     }
 }

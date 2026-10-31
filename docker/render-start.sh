@@ -16,8 +16,31 @@ if [ -z "${APP_KEY:-}" ]; then
     exit 1
 fi
 
+php artisan config:clear || true
 php artisan config:cache
 php artisan migrate --force
+
+# Seed initial reference data and default accounts if the database is unseeded
+if [ "${SKIP_DB_SEED:-false}" != "true" ]; then
+    NEEDS_SEED=$(php -r '
+        require "vendor/autoload.php";
+        $app = require_once "bootstrap/app.php";
+        $app->make(Illuminate\Contracts\Console\Kernel::class)->bootstrap();
+        try {
+            $settingsCount = Illuminate\Support\Facades\DB::table("settings")->count();
+            $usersCount = Illuminate\Support\Facades\DB::table("users")->count();
+            echo ($settingsCount === 0 || $usersCount === 0) ? "1" : "0";
+        } catch (\Throwable $e) {
+            echo "0";
+        }
+    ')
+    if [ "$NEEDS_SEED" = "1" ]; then
+        echo "Seeding initial database records..."
+        php artisan db:seed --force
+    fi
+fi
+
 php artisan storage:link || true
+chown -R www-data:www-data storage bootstrap/cache
 
 exec apache2-foreground
