@@ -78,7 +78,7 @@ php -r '
                     "user_type" => "super_admin",
                     "code" => strtoupper(Illuminate\Support\Str::random(10)),
                     "photo" => App\Helpers\Qs::getDefaultUserImage(),
-                    "remember_token" => Illuminate\Support\Str::random(10)),
+                    "remember_token" => Illuminate\Support\Str::random(10),
                     "created_at" => now(),
                     "updated_at" => now(),
                 ]);
