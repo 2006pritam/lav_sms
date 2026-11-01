@@ -25,6 +25,26 @@ require __DIR__.'/../vendor/autoload.php';
 
 /*
 |--------------------------------------------------------------------------
+| PHP 8.1+ uploaded-files compatibility
+|--------------------------------------------------------------------------
+|
+| PHP 8.1 added a "full_path" key to every $_FILES entry. The locked
+| symfony/http-foundation (5.2.x) does not know that key, so it mis-parses
+| the entry and any form containing a file input (even an empty one, such as
+| the logo field on the Settings page) crashes with a 500:
+| "createFromBase(): Argument #1 ($file) must be of type UploadedFile, int given".
+| Dropping the key restores the shape Symfony expects.
+|
+*/
+
+foreach ($_FILES as $field => $info) {
+    if (is_array($info) && array_key_exists('full_path', $info)) {
+        unset($_FILES[$field]['full_path']);
+    }
+}
+
+/*
+|--------------------------------------------------------------------------
 | Turn On The Lights
 |--------------------------------------------------------------------------
 |
