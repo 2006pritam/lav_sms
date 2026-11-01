@@ -3,6 +3,7 @@
 namespace App;
 
 use App\Models\BloodGroup;
+use App\Traits\BelongsToSchool;
 use App\Models\Lga;
 use App\Models\Nationality;
 use App\Models\StaffRecord;
@@ -15,7 +16,19 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 
 class User extends Authenticatable
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, BelongsToSchool;
+
+    /** Super admins run the whole platform: they belong to no single school. */
+    public function isSchoolExempt()
+    {
+        return $this->user_type === 'super_admin';
+    }
+
+    /** Also read users with no school (the super admins) inside any school. */
+    public function includesGlobalSchoolRows()
+    {
+        return true;
+    }
 
     /**
      * The attributes that are mass assignable.

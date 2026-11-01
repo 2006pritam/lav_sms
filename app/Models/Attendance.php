@@ -2,11 +2,14 @@
 
 namespace App\Models;
 
+use App\Traits\BelongsToSchool;
 use App\User;
 use Eloquent;
 
 class Attendance extends Eloquent
 {
+    use BelongsToSchool;
+
     protected $fillable = [
         'student_id',
         'my_class_id',

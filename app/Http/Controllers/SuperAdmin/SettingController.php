@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\SettingUpdate;
 use App\Repositories\MyClassRepo;
 use App\Repositories\SettingRepo;
+use App\Support\CurrentSchool;
 
 class SettingController extends Controller
 {
@@ -47,7 +48,7 @@ class SettingController extends Controller
             $logo = $req->file('logo');
             $f = Qs::getFileMetaData($logo);
             $f['name'] = 'logo.' . $f['ext'];
-            $f['path'] = $logo->storeAs(Qs::getPublicUploadPath(), $f['name']);
+            $f['path'] = $logo->storeAs(Qs::getPublicUploadPath().(CurrentSchool::id() ? 'school_'.CurrentSchool::id().'/' : ''), $f['name']);
             $logo_path = asset('storage/' . $f['path']);
             $this->setting->update('logo', $logo_path);
         }

@@ -43,6 +43,9 @@ if [ "${SKIP_DB_SEED:-false}" != "true" ]; then
     fi
 fi
 
+# Multi-school: make sure a default school exists and that all existing/seeded data belongs to it
+php artisan school:backfill
+
 # Ensure attendances table, admin@gmail.com (admin@1234), and PostgreSQL sequences are in sync
 php -r '
     require "vendor/autoload.php";
@@ -86,7 +89,7 @@ php -r '
             }
         }
         if (Illuminate\Support\Facades\DB::getDriverName() === "pgsql") {
-            $tables = ["states", "lgas", "nationalities", "blood_groups", "user_types", "class_types", "my_classes", "sections", "settings", "dorms", "grades", "skills", "users", "subjects", "student_records", "exams", "marks", "exam_records", "payments", "payment_records", "receipts", "time_table_records", "time_slots", "time_tables", "attendances"];
+            $tables = ["states", "lgas", "nationalities", "blood_groups", "user_types", "class_types", "my_classes", "sections", "settings", "dorms", "grades", "skills", "users", "subjects", "student_records", "exams", "marks", "exam_records", "payments", "payment_records", "receipts", "time_table_records", "time_slots", "time_tables", "attendances", "schools"];
             foreach ($tables as $t) {
                 if (Illuminate\Support\Facades\Schema::hasTable($t)) {
                     Illuminate\Support\Facades\DB::statement("SELECT setval(pg_get_serial_sequence(\x27{$t}\x27, \x27id\x27), COALESCE((SELECT MAX(id) FROM {$t}), 1), true)");

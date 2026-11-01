@@ -133,6 +133,13 @@
                     </li>
                 @endif
 
+                @if(Qs::userIsSuperAdmin())
+                    {{--Manage Schools--}}
+                    <li class="nav-item">
+                        <a href="{{ route('schools.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['schools.index', 'schools.edit']) ? 'active' : '' }}"><i class="icon-office"></i> <span> Schools</span></a>
+                    </li>
+                @endif
+
                 @if(Qs::userIsTeamSA())
                     {{--Manage Users--}}
                     <li class="nav-item">

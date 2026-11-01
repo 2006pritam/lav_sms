@@ -7,6 +7,23 @@
 
         <div class="header-elements d-none">
             <div class="d-flex justify-content-center">
+                @if(Qs::userIsSuperAdmin() && isset($switchableSchools) && $switchableSchools->count() > 0)
+                    <div class="btn-group align-self-center mr-3">
+                        <button type="button" class="btn btn-light dropdown-toggle" data-toggle="dropdown"><i class="icon-office mr-2"></i>{{ $currentSchool->name ?? 'Select school' }}</button>
+                        <div class="dropdown-menu dropdown-menu-right">
+                            @foreach($switchableSchools as $sch)
+                                <form method="post" action="{{ route('schools.switch', $sch->id) }}">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item {{ isset($currentSchool) && $currentSchool && $currentSchool->id == $sch->id ? 'active' : '' }}">{{ $sch->name }}</button>
+                                </form>
+                            @endforeach
+                            <div class="dropdown-divider"></div>
+                            <a href="{{ route('schools.index') }}" class="dropdown-item"><i class="icon-cog5"></i> Manage schools</a>
+                        </div>
+                    </div>
+                @elseif(isset($currentSchool) && $currentSchool)
+                    <span class="btn btn-link btn-float text-default"><i class="icon-office text-primary"></i> <span class="font-weight-semibold">{{ $currentSchool->name }}</span></span>
+                @endif
    {{--             <a href="#" class="btn btn-link btn-float text-default"><i class="icon-bars-alt text-primary"></i><span>Statistics</span></a>
                 <a href="#" class="btn btn-link btn-float text-default"><i class="icon-calculator text-primary"></i> <span>Invoices</span></a>
                 <a href="#" class="btn btn-link btn-float text-default"><i class="icon-calendar5 text-primary"></i> <span>Schedule</span></a>--}}

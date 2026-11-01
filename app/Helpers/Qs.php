@@ -3,6 +3,8 @@
 namespace App\Helpers;
 
 use App\Models\Setting;
+use App\Scopes\SchoolScope;
+use App\Support\CurrentSchool;
 use App\Models\StudentRecord;
 use App\Models\Subject;
 use Hashids\Hashids;
@@ -296,7 +298,15 @@ class Qs
         $defaults = self::getDefaultSettings();
 
         try {
-            $setting = Setting::where('type', $type)->first();
+            $query = Setting::withoutGlobalScope(SchoolScope::class)->where('type', $type);
+
+            // Guests (login page) and CLI have no current school: use the default school.
+            $schoolId = CurrentSchool::id() ?: CurrentSchool::defaultId();
+            if ($schoolId) {
+                $query->where('school_id', $schoolId);
+            }
+
+            $setting = $query->first();
             if ($setting && $setting->description !== null) {
                 return $setting->description;
             }

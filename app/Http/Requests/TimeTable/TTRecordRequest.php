@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests\TimeTable;
 
+use App\Support\CurrentSchool;
+use Illuminate\Validation\Rule;
+
 use Illuminate\Foundation\Http\FormRequest;
 
 class TTRecordRequest extends FormRequest
@@ -21,13 +24,13 @@ class TTRecordRequest extends FormRequest
     {
         if($this->method() === 'POST'){
             return [
-                'name' => 'required|string|min:3|unique:time_table_records',
+                'name' => ['required', 'string', 'min:3', Rule::unique('time_table_records')->where('school_id', CurrentSchool::id())],
                 'my_class_id' => 'required',
             ];
         }
 
         return [
-            'name' => 'required|string|min:3|unique:time_table_records,name,'.$this->ttr,
+            'name' => ['required', 'string', 'min:3', Rule::unique('time_table_records')->where('school_id', CurrentSchool::id())->ignore($this->ttr)],
             'my_class_id' => 'required',
         ];
     }

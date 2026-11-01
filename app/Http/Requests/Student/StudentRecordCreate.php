@@ -2,6 +2,9 @@
 
 namespace App\Http\Requests\Student;
 
+use App\Support\CurrentSchool;
+use Illuminate\Validation\Rule;
+
 use Illuminate\Foundation\Http\FormRequest;
 use App\Helpers\Qs;
 
@@ -22,7 +25,7 @@ class StudentRecordCreate extends FormRequest
     {
         return [
             'name' => 'required|string|min:6|max:150',
-            'adm_no' => 'sometimes|nullable|alpha_num|min:3|max:150|unique:student_records',
+            'adm_no' => ['sometimes', 'nullable', 'alpha_num', 'min:3', 'max:150', Rule::unique('student_records')->where('school_id', CurrentSchool::id())],
             'gender' => 'required|string',
             'year_admitted' => 'required|string',
             'phone' => 'sometimes|nullable|string|min:6|max:20',

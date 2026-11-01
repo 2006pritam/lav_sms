@@ -3,6 +3,7 @@
 namespace App\Repositories;
 
 use App\Models\Pin;
+use App\Support\CurrentSchool;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
@@ -11,6 +12,13 @@ class PinRepo
 
     public function create($data)
     {
+        $school = CurrentSchool::id();
+        if ($school) {
+            $data = array_map(function ($row) use ($school) {
+                return $row + ['school_id' => $school];
+            }, $data);
+        }
+
         return DB::table('pins')->insert($data);
     }
 

@@ -173,6 +173,13 @@ Route::group(['namespace' => 'SuperAdmin','middleware' => 'super_admin', 'prefix
     Route::get('/settings', 'SettingController@index')->name('settings');
     Route::put('/settings', 'SettingController@update')->name('settings.update');
 
+    /*************** Schools (multi-school) *****************/
+    Route::get('/schools', 'SchoolController@index')->name('schools.index');
+    Route::post('/schools', 'SchoolController@store')->name('schools.store');
+    Route::get('/schools/{school}/edit', 'SchoolController@edit')->name('schools.edit');
+    Route::put('/schools/{school}', 'SchoolController@update')->name('schools.update');
+    Route::post('/schools/{school}/switch', 'SchoolController@switch')->name('schools.switch');
+
 });
 
 /************************ PARENT ****************************/
