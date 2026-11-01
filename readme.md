@@ -50,18 +50,6 @@ This repository includes a Render Blueprint (`render.yaml`) and Docker configura
 
 The container runs `php artisan migrate --force` at startup and serves the application from Laravel's `public` directory. It does not run the bundled demo seeders because they create accounts with publicly documented default passwords. Populate required reference data and create an administrator with a unique password using a secure, project-specific process before opening the application to users.
 
-**Login Credentials**
-After seeding. Login details as follows:
-
-| Account Type  | Username | Email | Password |
-| ------------- | -------- | ----- | -------- |
-| Super Admin | cj | cj@cj.com | cj |
-|  Admin | admin | admin@admin.com | cj |
-|  Teacher | teacher | teacher@teacher.com | cj |
-|  Parent | parent | parent@parent.com | cj |
-|  Accountant | accountant | accountant@accountant.com | cj |
-|  Student | student | student@student.com | cj |
-
 #### **FUNCTIONS OF ACCOUNTS** 
 
 **-- SUPER ADMIN**

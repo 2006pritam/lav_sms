@@ -11,7 +11,12 @@ class UsersTableSeeder extends Seeder
 {
     public function run()
     {
-        DB::table('users')->delete();
+        if (app()->environment('production')) {
+            if ($this->command) {
+                $this->command->warn('Demo user seeding is disabled in production.');
+            }
+            return;
+        }
 
         $this->createNewUsers();
         $this->createManyUsers(3);
@@ -22,24 +27,6 @@ class UsersTableSeeder extends Seeder
         $password = Hash::make('cj');
 
         $d = [
-            [
-                'name' => 'CJ Inspired',
-                'email' => 'cj@cj.com',
-                'username' => 'cj',
-                'password' => $password,
-                'user_type' => 'super_admin',
-                'code' => strtoupper(Str::random(10)),
-                'remember_token' => Str::random(10),
-            ],
-            [
-                'name' => 'Admin',
-                'email' => 'admin@gmail.com',
-                'password' => Hash::make('admin@1234'),
-                'user_type' => 'super_admin',
-                'username' => 'admin',
-                'code' => strtoupper(Str::random(10)),
-                'remember_token' => Str::random(10),
-            ],
             [
                 'name' => 'Teacher Chike',
                 'email' => 'teacher@teacher.com',
@@ -68,7 +55,7 @@ class UsersTableSeeder extends Seeder
                 'remember_token' => Str::random(10),
             ],
         ];
-        DB::table('users')->insert($d);
+        DB::table('users')->insertOrIgnore($d);
     }
 
     protected function createManyUsers(int $count)
@@ -90,6 +77,6 @@ class UsersTableSeeder extends Seeder
             }
         }
 
-        DB::table('users')->insert($data);
+        DB::table('users')->insertOrIgnore($data);
     }
 }
