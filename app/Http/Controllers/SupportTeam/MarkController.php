@@ -25,7 +25,12 @@ class MarkController extends Controller
         $this->mark =  $mark;
         $this->student =  $student;
         $this->my_class =  $my_class;
-        $this->year =  Qs::getSetting('current_session');
+        // Resolved per request, once the signed-in user's school is known (a controller
+        // is created before the school is set, so reading it here would use the wrong school).
+        $this->middleware(function ($request, $next) {
+            $this->year = Qs::getCurrentSession();
+            return $next($request);
+        });
     }
 
     public function index()

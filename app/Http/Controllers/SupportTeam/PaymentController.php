@@ -24,7 +24,12 @@ class PaymentController extends Controller
     {
         $this->my_class = $my_class;
         $this->pay = $pay;
-        $this->year = Qs::getCurrentSession();
+        // Resolved per request, once the signed-in user's school is known (a controller
+        // is created before the school is set, so reading it here would use the wrong school).
+        $this->middleware(function ($request, $next) {
+            $this->year = Qs::getCurrentSession();
+            return $next($request);
+        });
         $this->student = $student;
 
         $this->middleware('teamAccount');
