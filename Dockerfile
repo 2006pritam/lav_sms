@@ -19,22 +19,34 @@ RUN apt-get update \
     && rm -rf /var/lib/apt/lists/*
 
 COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
-ENV COMPOSER_ALLOW_SUPERUSER=1 COMPOSER_PROCESS_TIMEOUT=600
+ENV COMPOSER_ALLOW_SUPERUSER=1 COMPOSER_PROCESS_TIMEOUT=600 COMPOSER_MAX_PARALLEL_HTTP=4
 
 WORKDIR /var/www/html
 COPY . .
 
-RUN composer install \
-        --no-dev \
-        --no-interaction \
-        --prefer-dist \
-        --optimize-autoloader \
-        --no-scripts \
-    && sh docker/patch-laravel-deprecations.sh \
-    && php artisan package:discover --ansi \
-    && mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache \
-    && chown -R www-data:www-data storage bootstrap/cache \
-    && chmod -R ug+rwX storage bootstrap/cache
+# Render's build network occasionally times out reaching github.com (curl error 28),
+# which is where Composer downloads packages from. Retry instead of failing the deploy.
+RUN set -eu; \
+    n=0; \
+    until composer install \
+            --no-dev \
+            --no-interaction \
+            --prefer-dist \
+            --optimize-autoloader \
+            --no-scripts; do \
+        n=$((n + 1)); \
+        if [ "$n" -ge 5 ]; then \
+            echo "composer install failed after $n attempts" >&2; \
+            exit 1; \
+        fi; \
+        echo "composer install failed (attempt $n), retrying in $((n * 15))s..."; \
+        sleep $((n * 15)); \
+    done; \
+    sh docker/patch-laravel-deprecations.sh; \
+    php artisan package:discover --ansi; \
+    mkdir -p storage/framework/cache/data storage/framework/sessions storage/framework/views storage/logs bootstrap/cache; \
+    chown -R www-data:www-data storage bootstrap/cache; \
+    chmod -R ug+rwX storage bootstrap/cache
 
 COPY docker/apache-vhost.conf /etc/apache2/sites-available/000-default.conf
 COPY docker/render-start.sh /usr/local/bin/render-start
