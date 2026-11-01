@@ -28,7 +28,7 @@
                     <div class="col-md-3">
                         <div class="form-group">
                             <label for="my_class_id" class="font-weight-semibold">Class <span class="text-danger">*</span></label>
-                            <select required onchange="getClassSections(this.value); getClassSubjects(this.value);" class="form-control select" name="my_class_id" id="my_class_id">
+                            <select required onchange="onAttendanceClassChange(this.value);" class="form-control select" name="my_class_id" id="my_class_id">
                                 <option value="">Select Class...</option>
                                 @foreach($my_classes as $mc)
                                     <option {{ ($selected && $my_class_id == $mc->id) ? 'selected' : '' }} value="{{ $mc->id }}">{{ $mc->name }}</option>
@@ -174,17 +174,25 @@
                     @endif
                     — <span class="text-primary">{{ date('l, d M Y', strtotime($attendance_date)) }}</span>
                 </h6>
-                <div class="header-elements">
-                    <button type="button" onclick="setAllAttendance('present')" class="btn btn-sm btn-outline-success mr-2">
-                        <i class="icon-checkmark3 mr-1"></i> Mark All Present
-                    </button>
-                    <button type="button" onclick="setAllAttendance('absent')" class="btn btn-sm btn-outline-danger">
-                        <i class="icon-cross2 mr-1"></i> Mark All Absent
-                    </button>
-                </div>
+                @if(Qs::userIsTeacher())
+                    <div class="header-elements">
+                        <button type="button" onclick="setAllAttendance('present')" class="btn btn-sm btn-outline-success mr-2">
+                            <i class="icon-checkmark3 mr-1"></i> Mark All Present
+                        </button>
+                        <button type="button" onclick="setAllAttendance('absent')" class="btn btn-sm btn-outline-danger">
+                            <i class="icon-cross2 mr-1"></i> Mark All Absent
+                        </button>
+                    </div>
+                @endif
             </div>
 
             <div class="card-body">
+                @if(!Qs::userIsTeacher())
+                    <div class="alert alert-info border-0 mb-3">
+                        <i class="icon-info22 mr-2"></i> Only a <strong>Teacher</strong> account can mark or update student attendance. You are viewing class attendance in read-only mode.
+                    </div>
+                @endif
+
                 @if($students->count() > 0)
                     <form method="post" action="{{ route('attendance.store') }}">
                         @csrf
@@ -229,16 +237,26 @@
                                                 @endif
                                             </td>
                                             <td class="text-center">
-                                                <div class="btn-group btn-group-toggle" data-toggle="buttons">
-                                                    <label class="btn btn-sm {{ $currentStatus === 'present' ? 'btn-success active' : 'btn-outline-success' }} att-label-present">
-                                                        <input type="radio" class="att-radio-present" name="statuses[{{ $sid }}]" value="present" {{ $currentStatus === 'present' ? 'checked' : '' }}>
-                                                        <i class="icon-checkmark3 mr-1"></i> Present
-                                                    </label>
-                                                    <label class="btn btn-sm {{ $currentStatus === 'absent' ? 'btn-danger active' : 'btn-outline-danger' }} att-label-absent">
-                                                        <input type="radio" class="att-radio-absent" name="statuses[{{ $sid }}]" value="absent" {{ $currentStatus === 'absent' ? 'checked' : '' }}>
-                                                        <i class="icon-cross2 mr-1"></i> Absent
-                                                    </label>
-                                                </div>
+                                                @if(Qs::userIsTeacher())
+                                                    <div class="btn-group btn-group-toggle" data-toggle="buttons">
+                                                        <label class="btn btn-sm {{ $currentStatus === 'present' ? 'btn-success active' : 'btn-outline-success' }} att-label-present">
+                                                            <input type="radio" class="att-radio-present" name="statuses[{{ $sid }}]" value="present" {{ $currentStatus === 'present' ? 'checked' : '' }}>
+                                                            <i class="icon-checkmark3 mr-1"></i> Present
+                                                        </label>
+                                                        <label class="btn btn-sm {{ $currentStatus === 'absent' ? 'btn-danger active' : 'btn-outline-danger' }} att-label-absent">
+                                                            <input type="radio" class="att-radio-absent" name="statuses[{{ $sid }}]" value="absent" {{ $currentStatus === 'absent' ? 'checked' : '' }}>
+                                                            <i class="icon-cross2 mr-1"></i> Absent
+                                                        </label>
+                                                    </div>
+                                                @else
+                                                    @if($existing)
+                                                        <span class="badge {{ $currentStatus === 'present' ? 'badge-success' : 'badge-danger' }} font-size-sm">
+                                                            {{ strtoupper($currentStatus) }}
+                                                        </span>
+                                                    @else
+                                                        <span class="badge badge-secondary">Not Marked</span>
+                                                    @endif
+                                                @endif
                                             </td>
                                             <td class="text-center">
                                                 <a href="#student-att-modal-{{ $sid }}" data-toggle="modal" class="badge {{ $badgeClass }} font-size-sm px-2 py-1" title="Tap to view Present & Absent classes">
@@ -246,7 +264,11 @@
                                                 </a>
                                             </td>
                                             <td>
-                                                <input type="text" name="remarks[{{ $sid }}]" value="{{ $existing->remarks ?? '' }}" class="form-control form-control-sm" placeholder="Optional note...">
+                                                @if(Qs::userIsTeacher())
+                                                    <input type="text" name="remarks[{{ $sid }}]" value="{{ $existing->remarks ?? '' }}" class="form-control form-control-sm" placeholder="Optional note...">
+                                                @else
+                                                    {{ $existing->remarks ?? '-' }}
+                                                @endif
                                             </td>
                                         </tr>
                                     @endforeach
@@ -254,11 +276,13 @@
                             </table>
                         </div>
 
-                        <div class="text-right mt-3">
-                            <button type="submit" class="btn btn-success btn-lg">
-                                <i class="icon-check mr-2"></i> Save Class Attendance
-                            </button>
-                        </div>
+                        @if(Qs::userIsTeacher())
+                            <div class="text-right mt-3">
+                                <button type="submit" class="btn btn-success btn-lg">
+                                    <i class="icon-check mr-2"></i> Save Class Attendance
+                                </button>
+                            </div>
+                        @endif
                     </form>
 
                     {{-- Per-Student Present / Absent Classes Modals --}}
@@ -358,6 +382,34 @@
     @endif
 
     <script>
+        function onAttendanceClassChange(class_id) {
+            if (!class_id) {
+                return;
+            }
+            var url = '{{ route('get_class_subjects', [':id']) }}'.replace(':id', class_id);
+            var section = $('#section_id');
+            var subject = $('#subject_id');
+
+            $.ajax({
+                dataType: 'json',
+                url: url,
+                success: function (resp) {
+                    section.empty().append($('<option>', { value: '', text: 'All Sections' }));
+                    subject.empty().append($('<option>', { value: '', text: 'General / Homeroom Attendance' }));
+                    if (resp && resp.sections) {
+                        $.each(resp.sections, function (i, data) {
+                            section.append($('<option>', { value: data.id, text: data.name }));
+                        });
+                    }
+                    if (resp && resp.subjects) {
+                        $.each(resp.subjects, function (i, data) {
+                            subject.append($('<option>', { value: data.id, text: data.name }));
+                        });
+                    }
+                }
+            });
+        }
+
         function setAllAttendance(status) {
             if (status === 'present') {
                 document.querySelectorAll('.att-radio-present').forEach(function (el) { el.checked = true; });

@@ -4,7 +4,7 @@
 
     <div class="card">
         <div class="card-header text-center">
-            <h4 class="card-title font-weight-bold">Student Marksheet for =>  {{ $sr->user->name.' ('.$my_class->name.' '.$my_class->section->first()->name.')' }} </h4>
+            <h4 class="card-title font-weight-bold">Student Marksheet for =>  {{ $sr->user->name.' ('.$my_class->name.' '.$sr->section->name.')' }} </h4>
         </div>
     </div>
 
@@ -35,7 +35,9 @@
             @include('pages.support_team.marks.show.comments')
 
             {{-- SKILL RATING --}}
-            @include('pages.support_team.marks.show.skills')
+            @if(Qs::userIsTeamSAT())
+                @include('pages.support_team.marks.show.skills')
+            @endif
 
         @endforeach
     @endforeach

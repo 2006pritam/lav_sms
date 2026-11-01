@@ -11,11 +11,11 @@
         </tr>
         <tr>
             <td><strong>NEXT TERM BEGINS:</strong></td>
-            <td>{{ date('l\, jS F\, Y', strtotime($s['term_begins'])) }}</td>
+            <td>{{ !empty($s['term_begins']) ? date('l\, jS F\, Y', strtotime($s['term_begins'])) : '-' }}</td>
         </tr>
         <tr>
             <td><strong>NEXT TERM FEES:</strong></td>
-            <td><del style="text-decoration-style: double">N</del>{{ $s['next_term_fees_'.strtolower($ct)] }}</td>
+            <td><del style="text-decoration-style: double">N</del>{{ $s['next_term_fees_'.strtolower($ct)] ?? '' }}</td>
         </tr>
         </tbody>
     </table>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Student;
 
+use App\Models\StudentRecord;
 use Illuminate\Foundation\Http\FormRequest;
 use App\Helpers\Qs;
 
@@ -20,11 +21,15 @@ class StudentRecordUpdate extends FormRequest
      */
     public function rules()
     {
+        $sr_id = Qs::decodeHash($this->route('student'));
+        $sr = $sr_id ? StudentRecord::find($sr_id) : null;
+        $user_id = $sr ? $sr->user_id : null;
+
         return [
             'name' => 'required|string|min:6|max:150',
             'gender' => 'required|string',
             'phone' => 'sometimes|nullable|string|min:6|max:20',
-            'email' => 'sometimes|nullable|email|max:100|unique:users,id',
+            'email' => 'sometimes|nullable|email|max:100|unique:users,email'.($user_id ? ','.$user_id : ''),
             'photo' => 'sometimes|nullable|image|mimes:jpeg,gif,png,jpg|max:2048',
             'address' => 'required|string|min:6|max:120',
             'bg_id' => 'sometimes|nullable',
@@ -56,7 +61,7 @@ class StudentRecordUpdate extends FormRequest
     {
         $input = $this->all();
 
-        $input['my_parent_id'] = $input['my_parent_id'] ? Qs::decodeHash($input['my_parent_id']) : NULL;
+        $input['my_parent_id'] = !empty($input['my_parent_id']) ? Qs::decodeHash($input['my_parent_id']) : NULL;
 
         $this->getInputSource()->replace($input);
 

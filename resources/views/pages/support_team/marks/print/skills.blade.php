@@ -18,12 +18,14 @@
         </tr>
         </thead>
         <tbody>
-        @foreach ($skills->where('skill_type', 'AF') as $af)
-            <tr>
-                <td>{{ $af->name }}</td>
-                <td>{{ $exr->af ? explode(',', $exr->af)[$loop->index] : '' }}</td>
-            </tr>
-        @endforeach
+        @if($skills)
+            @foreach ($skills->where('skill_type', 'AF') as $af)
+                <tr>
+                    <td>{{ $af->name }}</td>
+                    <td>{{ $exr->af ? (explode(',', $exr->af)[$loop->index] ?? '') : '' }}</td>
+                </tr>
+            @endforeach
+        @endif
         </tbody>
     </table>
 
@@ -35,12 +37,14 @@
         </tr>
         </thead>
         <tbody>
-        @foreach ($skills->where('skill_type', 'PS') as $ps)
-            <tr>
-                <td>{{ $ps->name }}</td>
-                <td>{{ $exr->ps ? explode(',', $exr->ps)[$loop->index] : '' }}</td>
-            </tr>
-        @endforeach
+        @if($skills)
+            @foreach ($skills->where('skill_type', 'PS') as $ps)
+                <tr>
+                    <td>{{ $ps->name }}</td>
+                    <td>{{ $exr->ps ? (explode(',', $exr->ps)[$loop->index] ?? '') : '' }}</td>
+                </tr>
+            @endforeach
+        @endif
         </tbody>
     </table>
 

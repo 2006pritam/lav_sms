@@ -2,14 +2,13 @@
 
 namespace App\Repositories;
 
-
 use App\Models\Setting;
 
 class SettingRepo
 {
     public function update($type, $desc)
     {
-        return Setting::where('type', $type)->update(['description' => $desc]);
+        return Setting::updateOrCreate(['type' => $type], ['description' => $desc]);
     }
 
     public function getSetting($type)

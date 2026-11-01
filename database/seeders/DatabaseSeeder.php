@@ -13,13 +13,6 @@ class DatabaseSeeder extends Seeder
      */
     public function run()
     {
-        if (app()->environment('production')) {
-            if ($this->command) {
-                $this->command->warn('Production demo seeding is disabled.');
-            }
-            return;
-        }
-
         $this->call(BloodGroupsTableSeeder::class);
         $this->call(GradesTableSeeder::class);
         $this->call(DormsTableSeeder::class);

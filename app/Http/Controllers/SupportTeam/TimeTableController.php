@@ -109,11 +109,11 @@ class TimeTableController extends Controller
     {
         $this->validate($req, ['ttr_id' => 'required'], [], ['ttr_id' => 'TimeTable Record']);
 
-        $d = [];  //  Empty Current Time Slot Before Adding New
         $this->tt->deleteTimeSlots(['ttr_id' => $ttr_id]);
         $time_slots = $this->tt->getTimeSlotByTTR($req->ttr_id)->toArray();
 
         foreach($time_slots as $ts){
+            unset($ts['id'], $ts['created_at'], $ts['updated_at']);
             $ts['ttr_id'] = $ttr_id;
             $this->tt->createTimeSlot($ts);
         }
@@ -233,9 +233,10 @@ class TimeTableController extends Controller
         }
 
         $d['d_time'] = collect($d_time);
-        $d['s'] = Setting::all()->flatMap(function($s){
+        $s = Setting::all()->flatMap(function($s){
             return [$s->type => $s->description];
-        });
+        })->toArray();
+        $d['s'] = array_merge(Qs::getDefaultSettings(), $s);
 
         return view('pages.support_team.timetables.print', $d);
     }

@@ -20,11 +20,13 @@ class SettingController extends Controller
 
     public function index()
     {
-         $s = $this->setting->all();
-         $d['class_types'] = $this->my_class->getTypes();
-         $d['s'] = $s->flatMap(function($s){
+        $s = $this->setting->all()->flatMap(function($s){
             return [$s->type => $s->description];
-        });
+        })->toArray();
+
+        $d['class_types'] = $this->my_class->getTypes();
+        $d['s'] = array_merge(Qs::getDefaultSettings(), $s);
+
         return view('pages.super_admin.settings', $d);
     }
 
@@ -32,10 +34,13 @@ class SettingController extends Controller
     {
         $sets = $req->except('_token', '_method', 'logo');
         $sets['lock_exam'] = $sets['lock_exam'] == 1 ? 1 : 0;
-        $keys = array_keys($sets);
-        $values = array_values($sets);
-        for($i=0; $i<count($sets); $i++){
-            $this->setting->update($keys[$i], $values[$i]);
+
+        foreach ($sets as $key => $value) {
+            if (strpos($key, 'nt_fee_') === 0) {
+                $code = substr($key, strlen('nt_fee_'));
+                $this->setting->update('next_term_fees_' . $code, $value);
+            }
+            $this->setting->update($key, $value);
         }
 
         if($req->hasFile('logo')) {

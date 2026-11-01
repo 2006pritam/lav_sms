@@ -12,6 +12,7 @@ class Qs
 {
     public static function displayError($errors)
     {
+        $data = [];
         foreach ($errors as $err) {
             $data[] = $err;
         }
@@ -80,9 +81,12 @@ class Qs
 
     public static function hash($id)
     {
+        if ($id === null || $id === '') {
+            return '';
+        }
         $date = date('dMY').'CJ';
         $hash = new Hashids($date, 14);
-        return $hash->encode($id);
+        return $hash->encode((int) $id);
     }
 
     public static function getUserRecord($remove = [])
@@ -109,40 +113,49 @@ class Qs
 
     public static function decodeHash($str, $toString = true)
     {
+        if ($str === null || $str === '') {
+            return $toString ? null : [];
+        }
+        if (is_numeric($str)) {
+            return $toString ? (string) $str : [(int) $str];
+        }
         $date = date('dMY').'CJ';
         $hash = new Hashids($date, 14);
-        $decoded = $hash->decode($str);
+        $decoded = $hash->decode((string) $str);
+        if (empty($decoded)) {
+            return $toString ? null : [];
+        }
         return $toString ? implode(',', $decoded) : $decoded;
     }
 
     public static function userIsTeamAccount()
     {
-        return in_array(Auth::user()->user_type, self::getTeamAccount());
+        return Auth::check() && in_array(Auth::user()->user_type, self::getTeamAccount());
     }
 
     public static function userIsTeamSA()
     {
-        return in_array(Auth::user()->user_type, self::getTeamSA());
+        return Auth::check() && in_array(Auth::user()->user_type, self::getTeamSA());
     }
 
     public static function userIsTeamSAT()
     {
-        return in_array(Auth::user()->user_type, self::getTeamSAT());
+        return Auth::check() && in_array(Auth::user()->user_type, self::getTeamSAT());
     }
 
     public static function userIsAcademic()
     {
-        return in_array(Auth::user()->user_type, self::getTeamAcademic());
+        return Auth::check() && in_array(Auth::user()->user_type, self::getTeamAcademic());
     }
 
     public static function userIsAdministrative()
     {
-        return in_array(Auth::user()->user_type, self::getTeamAdministrative());
+        return Auth::check() && in_array(Auth::user()->user_type, self::getTeamAdministrative());
     }
 
     public static function userIsAdmin()
     {
-        return Auth::user()->user_type == 'admin';
+        return Auth::check() && Auth::user()->user_type == 'admin';
     }
 
     public static function getUserType()
@@ -152,27 +165,27 @@ class Qs
 
     public static function userIsSuperAdmin()
     {
-        return Auth::user()->user_type == 'super_admin';
+        return Auth::check() && Auth::user()->user_type == 'super_admin';
     }
 
     public static function userIsStudent()
     {
-        return Auth::user()->user_type == 'student';
+        return Auth::check() && Auth::user()->user_type == 'student';
     }
 
     public static function userIsTeacher()
     {
-        return Auth::user()->user_type == 'teacher';
+        return Auth::check() && Auth::user()->user_type == 'teacher';
     }
 
     public static function userIsParent()
     {
-        return Auth::user()->user_type == 'parent';
+        return Auth::check() && Auth::user()->user_type == 'parent';
     }
 
     public static function userIsStaff()
     {
-        return in_array(Auth::user()->user_type, self::getStaff());
+        return Auth::check() && in_array(Auth::user()->user_type, self::getStaff());
     }
 
     public static function getStaff($remove=[])
@@ -195,7 +208,7 @@ class Qs
 
     public static function userIsPTA()
     {
-        return in_array(Auth::user()->user_type, self::getPTA());
+        return Auth::check() && in_array(Auth::user()->user_type, self::getPTA());
     }
 
     public static function userIsMyChild($student_id, $parent_id)
@@ -214,11 +227,6 @@ class Qs
         return ['super_admin', 'admin', 'teacher', 'parent'];
     }
 
-    /*public static function filesToUpload($programme)
-    {
-        return ['birth_cert', 'passport',  'neco_cert', 'waec_cert', 'ref1', 'ref2'];
-    }*/
-
     public static function getPublicUploadPath()
     {
         return 'uploads/';
@@ -236,7 +244,6 @@ class Qs
 
     public static function getFileMetaData($file)
     {
-        //$dataFile['name'] = $file->getClientOriginalName();
         $dataFile['ext'] = $file->getClientOriginalExtension();
         $dataFile['type'] = $file->getClientMimeType();
         $dataFile['size'] = self::formatBytes($file->getSize());
@@ -250,15 +257,18 @@ class Qs
 
     public static function formatBytes($size, $precision = 2)
     {
+        if ($size <= 0) {
+            return '0 B';
+        }
         $base = log($size, 1024);
         $suffixes = array('B', 'KB', 'MB', 'GB', 'TB');
 
         return round(pow(1024, $base - floor($base)), $precision) .' '. $suffixes[floor($base)];
     }
 
-    public static function getSetting($type)
+    public static function getDefaultSettings(): array
     {
-        $defaults = [
+        return [
             'current_session' => '2018-2019',
             'system_title' => 'CJIA',
             'system_name' => 'CJ INSPIRED ACADEMY',
@@ -279,6 +289,11 @@ class Qs
             'next_term_fees_s' => '15600',
             'next_term_fees_c' => '1600',
         ];
+    }
+
+    public static function getSetting($type)
+    {
+        $defaults = self::getDefaultSettings();
 
         try {
             $setting = Setting::where('type', $type)->first();

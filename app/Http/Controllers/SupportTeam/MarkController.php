@@ -26,8 +26,6 @@ class MarkController extends Controller
         $this->student =  $student;
         $this->my_class =  $my_class;
         $this->year =  Qs::getSetting('current_session');
-
-       // $this->middleware('teamSAT', ['except' => ['show', 'year_selected', 'year_selector', 'print_view'] ]);
     }
 
     public function index()
@@ -86,8 +84,6 @@ class MarkController extends Controller
         $d['year'] = $year;
         $d['student_id'] = $student_id;
         $d['skills'] = $this->exam->getSkillByClassType() ?: NULL;
-        //$d['ct'] = $d['class_type']->code;
-        //$d['mark_type'] = Qs::getMarkType($d['ct']);
 
         return view('pages.support_team.marks.show.index', $d);
     }
@@ -128,11 +124,10 @@ class MarkController extends Controller
         $d['exam_id'] = $exam_id;
 
         $d['skills'] = $this->exam->getSkillByClassType() ?: NULL;
-        $d['s'] = Setting::all()->flatMap(function($s){
+        $s = Setting::all()->flatMap(function($s){
             return [$s->type => $s->description];
-        });
-
-        //$d['mark_type'] = Qs::getMarkType($ct);
+        })->toArray();
+        $d['s'] = array_merge(Qs::getDefaultSettings(), $s);
 
         return view('pages.support_team.marks.print.index', $d);
     }
@@ -173,7 +168,10 @@ class MarkController extends Controller
         $d['sections'] = $this->my_class->getAllSections();
         $d['subjects'] = $this->my_class->getAllSubjects();
         if(Qs::userIsTeacher()){
-            $d['subjects'] = $this->my_class->findSubjectByTeacher(Auth::user()->id)->where('my_class_id', $class_id);
+            $teacherSubjects = $this->my_class->findSubjectByTeacher(Auth::user()->id)->where('my_class_id', $class_id);
+            if ($teacherSubjects->isNotEmpty()) {
+                $d['subjects'] = $teacherSubjects;
+            }
         }
         $d['selected'] = true;
         $d['class_type'] = $this->my_class->findTypeByClass($class_id);
@@ -198,29 +196,19 @@ class MarkController extends Controller
         {
             $all_st_ids[] = $mk->student_id;
 
-                $d['t1'] = $t1 = $mks['t1_'.$mk->id];
-                $d['t2'] = $t2 = $mks['t2_'.$mk->id];
-                $d['tca'] = $tca = $t1 + $t2;
-                $d['exm'] = $exm = $mks['exm_'.$mk->id];
-
+            $d['t1'] = $t1 = $mks['t1_'.$mk->id] ?? null;
+            $d['t2'] = $t2 = $mks['t2_'.$mk->id] ?? null;
+            $d['tca'] = $tca = (int) $t1 + (int) $t2;
+            $d['exm'] = $exm = $mks['exm_'.$mk->id] ?? null;
 
             /** SubTotal Grade, Remark, Cum, CumAvg**/
 
-            $d['tex'.$exam->term] = $total = $tca + $exm;
+            $d['tex'.$exam->term] = $total = $tca + (int) $exm;
 
             if($total > 100){
                 $d['tex'.$exam->term] = $d['t1'] = $d['t2'] = $d['t3'] = $d['t4'] = $d['tca'] = $d['exm'] = NULL;
             }
 
-         /*   if($exam->term < 3){
-                $grade = $this->mark->getGrade($total, $class_type->id);
-            }
-
-            if($exam->term == 3){
-                $d['cum'] = $this->mark->getSubCumTotal($total, $st_id, $subject_id, $class_id, $this->year);
-                $d['cum_ave'] = $cav = $this->mark->getSubCumAvg($total, $st_id, $subject_id, $class_id, $this->year);
-                $grade = $this->mark->getGrade(round($cav), $class_type->id);
-            }*/
             $grade = $this->mark->getGrade($total, $class_type->id);
             $d['grade_id'] = $grade ? $grade->id : NULL;
 
@@ -231,9 +219,7 @@ class MarkController extends Controller
 
         foreach($marks->sortBy('user.name') as $mk)
         {
-
             $d2['sub_pos'] = $this->mark->getSubPos($mk->student_id, $exam, $class_id, $subject_id, $this->year);
-
             $this->exam->updateMark($mk->id, $d2);
         }
 
@@ -244,7 +230,6 @@ class MarkController extends Controller
         unset( $p['subject_id'] );
 
         foreach ($all_st_ids as $st_id) {
-
             $p['student_id'] =$st_id;
             $d3['total'] = $this->mark->getExamTotalTerm($exam, $st_id, $class_id, $this->year);
             $d3['ave'] = $this->mark->getExamAvgTerm($exam, $st_id, $class_id, $section_id, $this->year);
@@ -286,15 +271,9 @@ class MarkController extends Controller
         $tex = 'tex'.$exam->term;
 
         foreach($marks as $mk){
-
             $total = $mk->$tex;
-            $d['grade_id'] = $this->mark->getGrade($total, $class_type->id);
-
-            /*      if($exam->term == 3){
-                      $d['cum'] = $this->mark->getSubCumTotal($total, $mk->student_id, $mk->subject_id, $class_id, $this->year);
-                      $d['cum_ave'] = $cav = $this->mark->getSubCumAvg($total, $mk->student_id, $mk->subject_id, $class_id, $this->year);
-                      $grade = $this->mark->getGrade(round($mk->cum_ave), $class_type->id);
-                  }*/
+            $grade = $this->mark->getGrade($total, $class_type->id);
+            $d['grade_id'] = $grade ? $grade->id : NULL;
 
             $this->exam->updateMark($mk->id, $d);
         }
@@ -303,7 +282,6 @@ class MarkController extends Controller
 
         /** Exam Record Update  **/
         foreach($exrs as $exr){
-
             $st_id = $exr->student_id;
 
             $d3['total'] = $this->mark->getExamTotalTerm($exam, $st_id, $class_id, $this->year);
@@ -332,7 +310,7 @@ class MarkController extends Controller
         $d = [];
         if($skill == 'AF' || $skill == 'PS'){
             $sk = strtolower($skill);
-            $d[$skill] = implode(',', $req->$sk);
+            $d[$sk] = is_array($req->$sk) ? implode(',', $req->$sk) : '';
         }
 
         $this->exam->updateRecord(['id' => $exr_id], $d);
@@ -396,8 +374,6 @@ class MarkController extends Controller
             $d['section']  = $this->my_class->findSection($section_id);
             $d['ex'] = $exam = $this->exam->find($exam_id);
             $d['tex'] = 'tex'.$exam->term;
-            //$d['class_type'] = $this->my_class->findTypeByClass($mc->id);
-            //$d['ct'] = $ct = $d['class_type']->code;
         }
 
         return view('pages.support_team.marks.tabulation.index', $d);
@@ -428,11 +404,10 @@ class MarkController extends Controller
         $d['section']  = $this->my_class->findSection($section_id);
         $d['ex'] = $exam = $this->exam->find($exam_id);
         $d['tex'] = 'tex'.$exam->term;
-        $d['s'] = Setting::all()->flatMap(function($s){
+        $s = Setting::all()->flatMap(function($s){
             return [$s->type => $s->description];
-        });
-        //$d['class_type'] = $this->my_class->findTypeByClass($mc->id);
-        //$d['ct'] = $ct = $d['class_type']->code;
+        })->toArray();
+        $d['s'] = array_merge(Qs::getDefaultSettings(), $s);
 
         return view('pages.support_team.marks.tabulation.print', $d);
     }

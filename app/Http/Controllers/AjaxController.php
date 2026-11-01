@@ -19,11 +19,8 @@ class AjaxController extends Controller
 
     public function get_lga($state_id)
     {
-//        $state_id = Qs::decodeHash($state_id);
-//        return ['id' => Qs::hash($q->id), 'name' => $q->name];
-
         $lgas = $this->loc->getLGAs($state_id);
-        return $data = $lgas->map(function($q){
+        return $lgas->values()->map(function($q){
             return ['id' => $q->id, 'name' => $q->name];
         })->all();
     }
@@ -31,7 +28,7 @@ class AjaxController extends Controller
     public function get_class_sections($class_id)
     {
         $sections = $this->my_class->getClassSections($class_id);
-        return $sections = $sections->map(function($q){
+        return $sections->values()->map(function($q){
             return ['id' => $q->id, 'name' => $q->name];
         })->all();
     }
@@ -42,13 +39,16 @@ class AjaxController extends Controller
         $subjects = $this->my_class->findSubjectByClass($class_id);
 
         if(Qs::userIsTeacher()){
-            $subjects = $this->my_class->findSubjectByTeacher(Auth::user()->id)->where('my_class_id', $class_id);
+            $teacherSubjects = $this->my_class->findSubjectByTeacher(Auth::user()->id)->where('my_class_id', $class_id)->values();
+            if ($teacherSubjects->isNotEmpty()) {
+                $subjects = $teacherSubjects;
+            }
         }
 
-        $d['sections'] = $sections->map(function($q){
+        $d['sections'] = $sections->values()->map(function($q){
             return ['id' => $q->id, 'name' => $q->name];
         })->all();
-        $d['subjects'] = $subjects->map(function($q){
+        $d['subjects'] = $subjects->values()->map(function($q){
             return ['id' => $q->id, 'name' => $q->name];
         })->all();
 
