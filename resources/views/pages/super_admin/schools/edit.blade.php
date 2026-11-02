@@ -45,10 +45,39 @@
                         </label>
                     </div>
                 </div>
+                <div class="form-group row">
+                    <label class="col-lg-3 col-form-label font-weight-semibold">Functions</label>
+                    <div class="col-lg-6">
+                        <p class="text-muted mb-2">Untick a function to switch it off for this school. Its pages and menu items disappear for everyone in the school.</p>
+                        @foreach(App\Models\School::$modules as $key => $m)
+                            <div class="mb-1"><label class="form-check-label">
+                                <input type="checkbox" name="modules[]" value="{{ $key }}" {{ $school->moduleEnabled($key) ? 'checked' : '' }}>
+                                {{ $m['label'] }}
+                            </label></div>
+                        @endforeach
+                    </div>
+                </div>
                 <div class="text-right">
                     <a href="{{ route('schools.index') }}" class="btn btn-light">Cancel</a>
                     <button type="submit" class="btn btn-primary">Save Changes</button>
                 </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="card border-danger">
+        <div class="card-header header-elements-inline">
+            <h6 class="card-title font-weight-semibold text-danger">Delete this school</h6>
+        </div>
+        <div class="card-body">
+            <p>This permanently deletes <strong>{{ $school->name }}</strong> with all its students, staff, classes, marks, payments and attendance. It cannot be undone. Consider switching the school to inactive instead.</p>
+            <form method="post" action="{{ route('schools.destroy', $school->id) }}" onsubmit="return confirm('Delete this school and all of its data for good?');">
+                @csrf @method('DELETE')
+                <div class="form-group row">
+                    <label class="col-lg-3 col-form-label font-weight-semibold">Type the code <code>{{ $school->code }}</code> to confirm</label>
+                    <div class="col-lg-6"><input name="confirm_code" required autocomplete="off" type="text" class="form-control" placeholder="{{ $school->code }}"></div>
+                </div>
+                <div class="text-right"><button type="submit" class="btn btn-danger"><i class="icon-trash mr-1"></i> Delete School</button></div>
             </form>
         </div>
     </div>

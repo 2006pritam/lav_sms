@@ -52,7 +52,7 @@
                 </li>
 
                 {{--Academics--}}
-                @if(Qs::userIsAcademic())
+                @if(Qs::userIsAcademic() && Qs::moduleEnabled('timetables'))
                     <li class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['tt.index', 'ttr.edit', 'ttr.show', 'ttr.manage']) ? 'nav-item-expanded nav-item-open' : '' }} ">
                         <a href="#" class="nav-link"><i class="icon-graduation2"></i> <span> Academics</span></a>
 
@@ -65,7 +65,7 @@
                     @endif
 
                 {{--Administrative--}}
-                @if(Qs::userIsAdministrative())
+                @if(Qs::userIsAdministrative() && Qs::moduleEnabled('payments'))
                     <li class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['payments.index', 'payments.create', 'payments.invoice', 'payments.receipts', 'payments.edit', 'payments.manage', 'payments.show',]) ? 'nav-item-expanded nav-item-open' : '' }} ">
                         <a href="#" class="nav-link"><i class="icon-office"></i> <span> Administrative</span></a>
 
@@ -91,7 +91,7 @@
                 @endif
 
                 {{--Manage Students--}}
-                @if(Qs::userIsTeamSAT())
+                @if(Qs::userIsTeamSAT() && Qs::moduleEnabled('students'))
                     <li class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['students.create', 'students.list', 'students.edit', 'students.show', 'students.promotion', 'students.promotion_manage', 'students.graduated']) ? 'nav-item-expanded nav-item-open' : '' }} ">
                         <a href="#" class="nav-link"><i class="icon-users"></i> <span> Students</span></a>
 
@@ -152,9 +152,11 @@
                     </li>
 
                     {{--Manage Dorms--}}
+                    @if(Qs::moduleEnabled('dorms'))
                     <li class="nav-item">
                         <a href="{{ route('dorms.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['dorms.index','dorms.edit']) ? 'active' : '' }}"><i class="icon-home9"></i> <span> Dormitories</span></a>
                     </li>
+                    @endif
 
                     {{--Manage Sections--}}
                     <li class="nav-item">
@@ -168,7 +170,7 @@
                 @endif
 
                 {{--Exam--}}
-                @if(Qs::userIsTeamSAT())
+                @if(Qs::userIsTeamSAT() && Qs::moduleEnabled('exams'))
                 <li class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['exams.index', 'exams.edit', 'grades.index', 'grades.edit', 'marks.index', 'marks.manage', 'marks.bulk', 'marks.tabulation', 'marks.show', 'marks.batch_fix',]) ? 'nav-item-expanded nav-item-open' : '' }} ">
                     <a href="#" class="nav-link"><i class="icon-books"></i> <span> Exams</span></a>
 
@@ -219,7 +221,7 @@
 
                 {{--End Exam--}}
 
-                @if(Qs::userIsTeacher())
+                @if(Qs::userIsTeacher() && Qs::moduleEnabled('attendance'))
                     <li class="nav-item">
                         <a href="{{ route('attendance.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['attendance.index', 'attendance.manage']) ? 'active' : '' }}"><i class="icon-calendar52"></i> <span>Attendance</span></a>
                     </li>

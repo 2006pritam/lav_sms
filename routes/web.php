@@ -178,6 +178,8 @@ Route::group(['namespace' => 'SuperAdmin','middleware' => 'super_admin', 'prefix
     Route::post('/schools', 'SchoolController@store')->name('schools.store');
     Route::get('/schools/{school}/edit', 'SchoolController@edit')->name('schools.edit');
     Route::put('/schools/{school}', 'SchoolController@update')->name('schools.update');
+    Route::post('/schools/{school}/toggle', 'SchoolController@toggle')->name('schools.toggle');
+    Route::delete('/schools/{school}', 'SchoolController@destroy')->name('schools.destroy');
     Route::post('/schools/{school}/switch', 'SchoolController@switch')->name('schools.switch');
 
 });

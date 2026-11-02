@@ -34,6 +34,13 @@
 
         <ul class="navbar-nav">
 
+            <li class="nav-item">
+                <a href="#" id="theme-toggle" class="navbar-nav-link theme-toggle" title="Switch between light and dark mode">
+                    <i class="icon-contrast" id="theme-toggle-icon"></i>
+                    <span class="d-md-none ml-2">Dark / Light mode</span>
+                </a>
+            </li>
+
             <li class="nav-item dropdown dropdown-user">
                 <a href="#" class="navbar-nav-link dropdown-toggle" data-toggle="dropdown">
                     <img style="width: 38px; height:38px;" src="{{ Auth::user()->photo }}" class="rounded-circle" alt="photo">
@@ -54,3 +61,21 @@
         </ul>
     </div>
 </div>
+<script>
+    (function () {
+        var root = document.documentElement;
+        var icon = document.getElementById('theme-toggle-icon');
+        function paint() {
+            var dark = root.getAttribute('data-theme') === 'dark';
+            icon.className = dark ? 'icon-sun3' : 'icon-contrast';
+        }
+        paint();
+        document.getElementById('theme-toggle').addEventListener('click', function (e) {
+            e.preventDefault();
+            var dark = root.getAttribute('data-theme') === 'dark';
+            if (dark) { root.removeAttribute('data-theme'); } else { root.setAttribute('data-theme', 'dark'); }
+            try { localStorage.setItem('lav_theme', dark ? 'light' : 'dark'); } catch (err) {}
+            paint();
+        });
+    })();
+</script>

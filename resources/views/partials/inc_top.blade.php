@@ -20,3 +20,13 @@
     <script src="{{ asset('global_assets/js/main/jquery.min.js') }} "></script>
     <script src="{{ asset('global_assets/js/main/bootstrap.bundle.min.js') }} "></script>
     <script src="{{ asset('global_assets/js/plugins/loaders/blockui.min.js') }} "></script>
+{{-- Apply the saved light/dark choice before the page paints, so there is no flash. --}}
+<script>
+    (function () {
+        try {
+            var t = localStorage.getItem('lav_theme');
+            if (t === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); }
+        } catch (e) {}
+    })();
+</script>
+<link href="{{ asset('assets/css/dark.css') }}?v=1" rel="stylesheet" type="text/css">

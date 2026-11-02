@@ -4,6 +4,7 @@
 </li>
 
 {{--Pins--}}
+@if(Qs::moduleEnabled('exams'))
 <li class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['pins.create', 'pins.index']) ? 'nav-item-expanded nav-item-open' : '' }} ">
     <a href="#" class="nav-link"><i class="icon-lock2"></i> <span> Pins</span></a>
 
@@ -21,3 +22,4 @@
         </li>
     </ul>
 </li>
+@endif

@@ -14,6 +14,7 @@ class CurrentSchool
 {
     protected static $id = null;
     protected static $defaultId = false;
+    protected static $model = null;
 
     public static function id()
     {
@@ -28,6 +29,18 @@ class CurrentSchool
     public static function forget()
     {
         static::$id = null;
+        static::$model = null;
+    }
+
+    public static function setModel($school)
+    {
+        static::$model = $school;
+    }
+
+    /** Is a function (module) switched on for the school being worked in? Guests/CLI: always yes. */
+    public static function moduleEnabled($key)
+    {
+        return static::$model ? static::$model->moduleEnabled($key) : true;
     }
 
     /** Lowest-id active school; used for the login page and as a fallback. */

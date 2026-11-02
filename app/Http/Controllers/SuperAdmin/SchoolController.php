@@ -57,6 +57,7 @@ class SchoolController extends Controller
                 'phone' => $req->phone,
                 'email' => $req->email,
                 'active' => 1,
+                'disabled_modules' => School::disabledFromInput($req->input('modules', array_keys(School::$modules))),
             ]);
 
             $this->createSettings($school, $source);
@@ -114,6 +115,7 @@ class SchoolController extends Controller
             'phone' => $req->phone,
             'email' => $req->email,
             'active' => $active,
+            'disabled_modules' => School::disabledFromInput($req->input('modules', [])),
         ]);
 
         // Keep the school's own settings page in step with these details.
@@ -134,6 +136,93 @@ class SchoolController extends Controller
         CurrentSchool::resetDefault();
 
         return redirect()->route('schools.index')->with('flash_success', 'School updated.');
+    }
+
+    /**
+     * Permanently remove a school and everything that belongs to it.
+     * The school code must be typed to confirm; the last school can never be removed.
+     */
+    public function destroy(Request $req, School $school)
+    {
+        $req->validate(['confirm_code' => 'required|string']);
+
+        if (strcasecmp(trim($req->confirm_code), $school->code) !== 0) {
+            return back()->with('flash_danger', 'The code you typed does not match, so nothing was deleted.');
+        }
+
+        if (School::where('id', '<>', $school->id)->count() === 0) {
+            return back()->with('flash_danger', 'The last school cannot be deleted.');
+        }
+
+        if ($school->active && School::where('active', 1)->where('id', '<>', $school->id)->count() === 0) {
+            return back()->with('flash_danger', 'Activate another school before deleting the only active one.');
+        }
+
+        $name = $school->name;
+
+        try {
+            DB::transaction(function () use ($school) {
+                $this->purgeSchoolData($school->id);
+                $school->delete();
+            });
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->with('flash_danger', 'The school could not be deleted, so nothing was changed.');
+        }
+
+        if ((int) $req->session()->get('school_id') === (int) $school->id) {
+            $req->session()->forget('school_id');
+        }
+        CurrentSchool::resetDefault();
+
+        // The school's own uploaded files (logo etc.).
+        try {
+            \Illuminate\Support\Facades\Storage::disk('public')->deleteDirectory('uploads/school_'.$school->id);
+        } catch (\Throwable $e) {
+        }
+
+        return redirect()->route('schools.index')->with('flash_success', "School \"{$name}\" and all its data were deleted.");
+    }
+
+    /**
+     * Delete every row of a school. Tables are tried repeatedly so that rows other
+     * rows depend on go last, whatever the foreign keys look like.
+     */
+    protected function purgeSchoolData($id)
+    {
+        $pending = array_reverse(\App\Services\SchoolBackfill::$tenantTables);
+
+        for ($pass = 0; $pass < 8 && $pending; $pass++) {
+            $failed = [];
+            foreach ($pending as $table) {
+                try {
+                    DB::transaction(function () use ($table, $id) {
+                        DB::table($table)->where('school_id', $id)->delete();
+                    });
+                } catch (\Throwable $e) {
+                    $failed[$table] = $e;
+                }
+            }
+            $pending = array_keys($failed);
+        }
+
+        if ($pending) {
+            throw reset($failed);
+        }
+    }
+
+    /** One-click activate / deactivate from the schools list. */
+    public function toggle(School $school)
+    {
+        if ($school->active && School::where('active', 1)->where('id', '<>', $school->id)->count() === 0) {
+            return back()->with('flash_danger', 'At least one school must stay active.');
+        }
+
+        $school->update(['active' => $school->active ? 0 : 1]);
+        CurrentSchool::resetDefault();
+
+        return back()->with('flash_success', $school->active ? 'School activated.' : 'School deactivated. Its users can no longer sign in.');
     }
 
     public function switch(Request $req, School $school)

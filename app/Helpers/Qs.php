@@ -293,6 +293,11 @@ class Qs
         ];
     }
 
+    public static function moduleEnabled($key)
+    {
+        return CurrentSchool::moduleEnabled($key);
+    }
+
     public static function getSetting($type)
     {
         $defaults = self::getDefaultSettings();

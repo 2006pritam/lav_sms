@@ -23,6 +23,7 @@
                     <th>Code</th>
                     <th>Students</th>
                     <th>Staff</th>
+                    <th>Functions off</th>
                     <th>Status</th>
                     <th>Action</th>
                 </tr>
@@ -35,6 +36,7 @@
                         <td>{{ $s->code }}</td>
                         <td>{{ $students[$s->id] ?? 0 }}</td>
                         <td>{{ $staff[$s->id] ?? 0 }}</td>
+                        <td>{{ count((array) $s->disabled_modules) ? implode(', ', array_map(function ($k) { return App\Models\School::$modules[$k]['label'] ?? $k; }, $s->disabled_modules)) : '—' }}</td>
                         <td>{!! $s->active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-secondary">Inactive</span>' !!}</td>
                         <td>
                             <form method="post" action="{{ route('schools.switch', $s->id) }}" class="d-inline">
@@ -42,6 +44,10 @@
                                 <button type="submit" class="btn btn-sm btn-outline-primary">Open</button>
                             </form>
                             <a href="{{ route('schools.edit', $s->id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
+                            <form method="post" action="{{ route('schools.toggle', $s->id) }}" class="d-inline">
+                                @csrf
+                                <button type="submit" class="btn btn-sm {{ $s->active ? 'btn-outline-warning' : 'btn-outline-success' }}">{{ $s->active ? 'Deactivate' : 'Activate' }}</button>
+                            </form>
                         </td>
                     </tr>
                 @endforeach
@@ -80,6 +86,14 @@
                         <div class="form-group row">
                             <label class="col-lg-4 col-form-label font-weight-semibold">Address</label>
                             <div class="col-lg-8"><input name="address" value="{{ old('address') }}" type="text" class="form-control" placeholder="School Address"></div>
+                        </div>
+                        <div class="form-group row">
+                            <label class="col-lg-4 col-form-label font-weight-semibold">Functions</label>
+                            <div class="col-lg-8">
+                                @foreach(App\Models\School::$modules as $key => $m)
+                                    <div><label class="form-check-label"><input type="checkbox" name="modules[]" value="{{ $key }}" checked> {{ $m['label'] }}</label></div>
+                                @endforeach
+                            </div>
                         </div>
                         <div class="form-group row">
                             <div class="col-lg-8 offset-lg-4">

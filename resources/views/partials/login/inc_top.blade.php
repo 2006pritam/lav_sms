@@ -19,3 +19,13 @@
 <script src="{{ asset('assets/js/app.js') }} "></script>
 <script src="{{ asset('global_assets/js/demo_pages/login.js') }} "></script>
 <!-- /theme JS files -->
+{{-- Apply the saved light/dark choice before the page paints, so there is no flash. --}}
+<script>
+    (function () {
+        try {
+            var t = localStorage.getItem('lav_theme');
+            if (t === 'dark') { document.documentElement.setAttribute('data-theme', 'dark'); }
+        } catch (e) {}
+    })();
+</script>
+<link href="{{ asset('assets/css/dark.css') }}?v=1" rel="stylesheet" type="text/css">

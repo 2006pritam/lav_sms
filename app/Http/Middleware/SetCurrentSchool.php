@@ -52,6 +52,7 @@ class SetCurrentSchool
 
             if ($school) {
                 CurrentSchool::set($school->id);
+                CurrentSchool::setModel($school);
             }
         }
 
