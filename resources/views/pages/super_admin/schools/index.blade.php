@@ -32,17 +32,13 @@
                 @foreach($schools as $s)
                     <tr>
                         <td>{{ $loop->iteration }}</td>
-                        <td>{{ $s->name }} @if(isset($currentSchool) && $currentSchool && $currentSchool->id == $s->id) <span class="badge badge-primary ml-1">Current</span> @endif</td>
+                        <td>{{ $s->name }}</td>
                         <td>{{ $s->code }}</td>
                         <td>{{ $students[$s->id] ?? 0 }}</td>
                         <td>{{ $staff[$s->id] ?? 0 }}</td>
                         <td>{{ count((array) $s->disabled_modules) ? implode(', ', array_map(function ($k) { return App\Models\School::$modules[$k]['label'] ?? $k; }, $s->disabled_modules)) : '—' }}</td>
                         <td>{!! $s->active ? '<span class="badge badge-success">Active</span>' : '<span class="badge badge-secondary">Inactive</span>' !!}</td>
                         <td>
-                            <form method="post" action="{{ route('schools.switch', $s->id) }}" class="d-inline">
-                                @csrf
-                                <button type="submit" class="btn btn-sm btn-outline-primary">Open</button>
-                            </form>
                             <a href="{{ route('schools.edit', $s->id) }}" class="btn btn-sm btn-outline-secondary">Edit</a>
                             <form method="post" action="{{ route('schools.toggle', $s->id) }}" class="d-inline">
                                 @csrf
@@ -99,7 +95,7 @@
                             <div class="col-lg-8 offset-lg-4">
                                 <label class="form-check-label">
                                     <input type="checkbox" name="copy_defaults" value="1" checked>
-                                    Start with the classes and grading scale of the school I am in now
+                                    Start the school with a ready-made set of classes and grading scale (the school admin can change them)
                                 </label>
                             </div>
                         </div>

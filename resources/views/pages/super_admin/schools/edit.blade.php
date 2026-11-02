@@ -65,6 +65,45 @@
         </div>
     </div>
 
+    <div class="card">
+        <div class="card-header header-elements-inline">
+            <h6 class="card-title font-weight-semibold">School admins</h6>
+        </div>
+        <div class="card-body">
+            <p class="text-muted">A school admin manages everything inside this school: students, parents, teachers, accountants, classes, sections, subjects, dormitories, exams and fees.</p>
+            <table class="table mb-4">
+                <thead><tr><th>Name</th><th>Username</th><th>Email</th><th>New password</th></tr></thead>
+                <tbody>
+                @forelse($admins as $a)
+                    <tr>
+                        <td>{{ $a->name }}</td><td>{{ $a->username }}</td><td>{{ $a->email }}</td>
+                        <td>
+                            <form method="post" action="{{ route('schools.admins.password', [$school->id, $a->id]) }}" class="form-inline">
+                                @csrf
+                                <input type="password" name="new_password" minlength="6" required class="form-control form-control-sm mr-2" placeholder="New password">
+                                <button class="btn btn-sm btn-outline-secondary">Change</button>
+                            </form>
+                        </td>
+                    </tr>
+                @empty
+                    <tr><td colspan="4" class="text-muted">This school has no admin yet. Add one below.</td></tr>
+                @endforelse
+                </tbody>
+            </table>
+            <h6 class="font-weight-semibold">Add another admin</h6>
+            <form method="post" action="{{ route('schools.admins.store', $school->id) }}">
+                @csrf
+                <div class="row">
+                    <div class="col-md-3 mb-2"><input name="admin_name" required class="form-control" placeholder="Full name"></div>
+                    <div class="col-md-2 mb-2"><input name="admin_username" required class="form-control" placeholder="Username"></div>
+                    <div class="col-md-3 mb-2"><input name="admin_email" type="email" required class="form-control" placeholder="Email"></div>
+                    <div class="col-md-2 mb-2"><input name="admin_password" type="password" minlength="6" required class="form-control" placeholder="Password"></div>
+                    <div class="col-md-2 mb-2"><button class="btn btn-primary btn-block">Add Admin</button></div>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div class="card border-danger">
         <div class="card-header header-elements-inline">
             <h6 class="card-title font-weight-semibold text-danger">Delete this school</h6>

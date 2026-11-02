@@ -115,7 +115,7 @@
                                                     @endif
 
                                                     {{--Delete--}}
-                                                    @if(Qs::userIsSuperAdmin())
+                                                    @if(Qs::userIsAdmin())
                                                         <a id="{{ $ttr->id }}" onclick="confirmDelete(this.id)" href="#" class="dropdown-item"><i class="icon-trash"></i> Delete</a>
                                                         <form method="post" id="item-delete-{{ $ttr->id }}" action="{{ route('ttr.destroy', $ttr->id) }}" class="hidden">@csrf @method('delete')</form>
                                                     @endif

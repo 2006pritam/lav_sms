@@ -167,11 +167,14 @@ Route::group(['middleware' => 'auth'], function () {
 
 });
 
-/************************ SUPER ADMIN ****************************/
-Route::group(['namespace' => 'SuperAdmin','middleware' => 'super_admin', 'prefix' => 'super_admin'], function(){
+/************************ SCHOOL ADMIN: school settings ****************************/
+Route::group(['namespace' => 'SuperAdmin', 'middleware' => ['auth', 'admin'], 'prefix' => 'settings'], function(){
+    Route::get('/', 'SettingController@index')->name('settings');
+    Route::put('/', 'SettingController@update')->name('settings.update');
+});
 
-    Route::get('/settings', 'SettingController@index')->name('settings');
-    Route::put('/settings', 'SettingController@update')->name('settings.update');
+/************************ SUPER ADMIN (platform: schools only) ****************************/
+Route::group(['namespace' => 'SuperAdmin','middleware' => 'super_admin', 'prefix' => 'super_admin'], function(){
 
     /*************** Schools (multi-school) *****************/
     Route::get('/schools', 'SchoolController@index')->name('schools.index');
@@ -180,7 +183,8 @@ Route::group(['namespace' => 'SuperAdmin','middleware' => 'super_admin', 'prefix
     Route::put('/schools/{school}', 'SchoolController@update')->name('schools.update');
     Route::post('/schools/{school}/toggle', 'SchoolController@toggle')->name('schools.toggle');
     Route::delete('/schools/{school}', 'SchoolController@destroy')->name('schools.destroy');
-    Route::post('/schools/{school}/switch', 'SchoolController@switch')->name('schools.switch');
+    Route::post('/schools/{school}/admins', 'SchoolController@storeAdmin')->name('schools.admins.store');
+    Route::post('/schools/{school}/admins/{user}/password', 'SchoolController@resetAdminPassword')->name('schools.admins.password');
 
 });
 

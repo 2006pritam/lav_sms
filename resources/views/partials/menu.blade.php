@@ -51,6 +51,14 @@
                     </a>
                 </li>
 
+                @if(Qs::userIsSuperAdmin())
+                    {{--Manage Schools--}}
+                    <li class="nav-item">
+                        <a href="{{ route('schools.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['schools.index', 'schools.edit']) ? 'active' : '' }}"><i class="icon-office"></i> <span> Schools</span></a>
+                    </li>
+                @endif
+
+                @unless(Qs::userIsSuperAdmin())
                 {{--Academics--}}
                 @if(Qs::userIsAcademic() && Qs::moduleEnabled('timetables'))
                     <li class="nav-item nav-item-submenu {{ in_array(Route::currentRouteName(), ['tt.index', 'ttr.edit', 'ttr.show', 'ttr.manage']) ? 'nav-item-expanded nav-item-open' : '' }} ">
@@ -130,13 +138,6 @@
                                 @endif
 
                         </ul>
-                    </li>
-                @endif
-
-                @if(Qs::userIsSuperAdmin())
-                    {{--Manage Schools--}}
-                    <li class="nav-item">
-                        <a href="{{ route('schools.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['schools.index', 'schools.edit']) ? 'active' : '' }}"><i class="icon-office"></i> <span> Schools</span></a>
                     </li>
                 @endif
 
@@ -226,6 +227,7 @@
                         <a href="{{ route('attendance.index') }}" class="nav-link {{ in_array(Route::currentRouteName(), ['attendance.index', 'attendance.manage']) ? 'active' : '' }}"><i class="icon-calendar52"></i> <span>Attendance</span></a>
                     </li>
                 @endif
+                @endunless
                 @include('pages.'.Qs::getUserType().'.menu')
 
                 {{--Manage Account--}}

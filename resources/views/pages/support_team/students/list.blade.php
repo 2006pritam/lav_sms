@@ -60,7 +60,7 @@
                                                 <a target="_blank" href="{{ route('marks.year_selector', Qs::hash($s->user->id)) }}" class="dropdown-item"><i class="icon-check"></i> Marksheet</a>
 
                                                 {{--Delete--}}
-                                                @if(Qs::userIsSuperAdmin())
+                                                @if(Qs::userIsAdmin())
                                                     <a id="{{ Qs::hash($s->user->id) }}" onclick="confirmDelete(this.id)" href="#" class="dropdown-item"><i class="icon-trash"></i> Delete</a>
                                                     <form method="post" id="item-delete-{{ Qs::hash($s->user->id) }}" action="{{ route('students.destroy', Qs::hash($s->user->id)) }}" class="hidden">@csrf @method('delete')</form>
                                                 @endif
@@ -110,7 +110,7 @@
                                                     <a href="#" class="dropdown-item"><i class="icon-check"></i> Marksheet</a>
 
                                                     {{--Delete--}}
-                                                    @if(Qs::userIsSuperAdmin())
+                                                    @if(Qs::userIsAdmin())
                                                         <a id="{{ Qs::hash($sr->user->id) }}" onclick="confirmDelete(this.id)" href="#" class="dropdown-item"><i class="icon-trash"></i> Delete</a>
                                                         <form method="post" id="item-delete-{{ Qs::hash($sr->user->id) }}" action="{{ route('students.destroy', Qs::hash($sr->user->id)) }}" class="hidden">@csrf @method('delete')</form>
                                                     @endif

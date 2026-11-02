@@ -15,6 +15,7 @@ class CurrentSchool
     protected static $id = null;
     protected static $defaultId = false;
     protected static $model = null;
+    protected static $platformAdmin = false;
 
     public static function id()
     {
@@ -30,6 +31,17 @@ class CurrentSchool
     {
         static::$id = null;
         static::$model = null;
+        static::$platformAdmin = false;
+    }
+
+    public static function setPlatformAdmin($yes)
+    {
+        static::$platformAdmin = (bool) $yes;
+    }
+
+    public static function isPlatformAdmin()
+    {
+        return static::$platformAdmin;
     }
 
     public static function setModel($school)

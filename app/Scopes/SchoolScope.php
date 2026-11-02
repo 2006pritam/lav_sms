@@ -30,7 +30,7 @@ class SchoolScope implements Scope
 
         $column = $model->getTable().'.school_id';
 
-        if ($this->includeGlobalRows) {
+        if ($this->includeGlobalRows && CurrentSchool::isPlatformAdmin()) {
             $builder->where(function ($q) use ($column, $school) {
                 $q->where($column, $school)->orWhereNull($column);
             });

@@ -89,7 +89,46 @@ class SchoolController extends Controller
 
     public function edit(School $school)
     {
-        return view('pages.super_admin.schools.edit', ['school' => $school]);
+        $admins = User::withoutGlobalScope(\App\Scopes\SchoolScope::class)
+            ->where('school_id', $school->id)->where('user_type', 'admin')->orderBy('id')->get();
+
+        return view('pages.super_admin.schools.edit', ['school' => $school, 'admins' => $admins]);
+    }
+
+    public function storeAdmin(Request $req, School $school)
+    {
+        $req->validate([
+            'admin_name' => 'required|string|max:100',
+            'admin_username' => 'required|alpha_dash|min:3|max:100|unique:users,username',
+            'admin_email' => 'required|email|max:100|unique:users,email',
+            'admin_password' => 'required|string|min:6|max:100',
+        ], [], ['admin_name' => 'Admin Name', 'admin_username' => 'Username', 'admin_email' => 'Email', 'admin_password' => 'Password']);
+
+        $admin = new User([
+            'name' => ucwords($req->admin_name),
+            'username' => $req->admin_username,
+            'email' => $req->admin_email,
+            'user_type' => 'admin',
+            'code' => strtoupper(Str::random(10)),
+            'photo' => Qs::getDefaultUserImage(),
+            'password' => Hash::make($req->admin_password),
+        ]);
+        $admin->school_id = $school->id;
+        $admin->save();
+
+        return back()->with('flash_success', 'School admin added.');
+    }
+
+    public function resetAdminPassword(Request $req, School $school, $user)
+    {
+        $req->validate(['new_password' => 'required|string|min:6|max:100']);
+
+        $admin = User::withoutGlobalScope(\App\Scopes\SchoolScope::class)
+            ->where('school_id', $school->id)->where('user_type', 'admin')->findOrFail($user);
+        $admin->password = Hash::make($req->new_password);
+        $admin->save();
+
+        return back()->with('flash_success', 'Password changed for '.$admin->name.'.');
     }
 
     public function update(Request $req, School $school)
