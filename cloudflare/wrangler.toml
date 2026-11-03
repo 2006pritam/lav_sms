@@ -1,0 +1,9 @@
+name = "edudesk"
+main = "src/index.js"
+compatibility_date = "2026-11-01"
+
+[vars]
+# The Laravel app on Voroa. Change this if the Voroa address changes.
+ORIGIN = "https://school.getvoroa.com"
+
+# Secret (set once, never stored in git):  npx wrangler secret put EDGE_SECRET
